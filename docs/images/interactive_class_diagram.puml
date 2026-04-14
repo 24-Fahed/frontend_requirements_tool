@@ -1,0 +1,159 @@
+@startuml 交互式需求收集子系统_类图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ClassFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+skinparam ArrowColor #333333
+skinparam ClassFontSize 12
+skinparam ClassAttributeFontSize 11
+skinparam ClassMethodFontSize 11
+
+title 交互式需求收集子系统 - 构件图（类图）
+
+' === 模拟器模块 ===
+package "模拟器模块" as MOD_SIM #FFE0B2 {
+
+  class PhoneFrame {
+    - width: number
+    - height: number
+    - statusBarText: string
+    + render(): VNode
+  }
+
+  class SimulatorRenderer {
+    - nodeTree: LayoutNode[]
+    - componentMap: Map<string, Component>
+    + setNodeTree(nodes: LayoutNode[]): void
+    + addNode(parentId: string, node: LayoutNode): void
+    + removeNode(nodeId: string): void
+    + moveNode(nodeId: string, targetParentId: string, index: number): void
+    + updateNodeProps(nodeId: string, props: object): void
+    + getNodeTree(): LayoutNode[]
+    + render(): VNode
+  }
+}
+
+' === 拖拽控制模块 ===
+package "拖拽控制模块" as MOD_DRAG #FFE0B2 {
+
+  class DragDropController {
+    - sourceType: "component" | "layout"
+    - sourceData: object
+    + startDrag(type: string, data: object): void
+    + endDrag(): void
+    + onDrop(targetId: string, index: number): void
+  }
+
+  class DropZoneManager {
+    - zones: Map<string, DropZone>
+    + registerZone(containerId: string, maxChildren: number): void
+    + unregisterZone(containerId: string): void
+    + isValidDrop(targetId: string): boolean
+    + getDropIndex(event: DragEvent): number
+  }
+}
+
+' === 组件管理模块 ===
+package "组件管理模块" as MOD_COMP #FFE0B2 {
+
+  class ComponentRegistry {
+    - components: Map<string, ComponentInfo>
+    + registerAll(config: ComponentConfig): void
+    + get(name: string): ComponentInfo
+    + getAll(): ComponentInfo[]
+    + getByCategory(category: string): ComponentInfo[]
+  }
+
+  class ComponentLoader {
+    - loadedLibs: Map<string, object>
+    + loadLibrary(sourceFile: string): Promise<object>
+    + resolveComponent(componentTag: string): Component
+  }
+
+  class ComponentInfo {
+    + name: string
+    + label: string
+    + category: string
+    + icon: string
+    + props: PropDef[]
+    + defaultProps: object
+    + sourceFile: string
+    + componentTag: string
+  }
+
+  class PropDef {
+    + name: string
+    + type: string
+    + options: string[]
+    + default: any
+    + label: string
+  }
+}
+
+' === 布局管理模块 ===
+package "布局管理模块" as MOD_LAYOUT #FFE0B2 {
+
+  class LayoutRegistry {
+    - layouts: Map<string, LayoutInfo>
+    + registerAll(config: LayoutConfig): void
+    + get(name: string): LayoutInfo
+    + getAll(): LayoutInfo[]
+    + getByCategory(category: string): LayoutInfo[]
+  }
+
+  class LayoutResolver {
+    + resolve(defaultLayoutId: string): LayoutNode[]
+    + createNode(type: string, props: object): LayoutNode
+    + cloneTree(nodes: LayoutNode[]): LayoutNode[]
+  }
+
+  class LayoutInfo {
+    + name: string
+    + label: string
+    + category: string
+    + icon: string
+    + props: PropDef[]
+    + defaultProps: object
+    + isContainer: boolean
+    + maxChildren: number
+    + sourceFile: string
+    + componentTag: string
+  }
+}
+
+' === 结果序列化模块 ===
+package "结果序列化模块" as MOD_SER #FFE0B2 {
+
+  class ResultSerializer {
+    + serialize(nodeTree: LayoutNode[]): object
+    + deserialize(data: object): LayoutNode[]
+  }
+}
+
+' === 通用数据类 ===
+class LayoutNode {
+  + id: string
+  + type: string
+  + props: object
+  + children: LayoutNode[]
+}
+
+' === 关系 ===
+PhoneFrame *-- SimulatorRenderer : 包含
+SimulatorRenderer o-- LayoutNode : 渲染
+SimulatorRenderer --> ComponentLoader : 加载组件
+DragDropController --> DropZoneManager : 校验放置
+DragDropController --> SimulatorRenderer : 添加/移动/删除节点
+ComponentRegistry *-- ComponentInfo : 包含
+ComponentInfo *-- PropDef : 包含
+ComponentRegistry --> ComponentLoader : 使用
+LayoutRegistry *-- LayoutInfo : 包含
+LayoutInfo --|> ComponentInfo : 继承属性结构
+LayoutRegistry --> LayoutResolver : 使用
+ResultSerializer --> LayoutNode : 序列化
+
+@enduml

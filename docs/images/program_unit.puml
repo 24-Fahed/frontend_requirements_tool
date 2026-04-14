@@ -1,0 +1,109 @@
+@startuml 程序单元图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam RectangleFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+skinparam ComponentFontName SimHei
+skinparam ArrowColor #333333
+skinparam PackageFontSize 14
+skinparam ComponentFontSize 12
+
+title 需求收集工具 - 程序单元图
+
+' === 前端应用 ===
+package "前端应用\n（可独立部署的Web应用）" as PU_FE #E8F4FD {
+
+  package "界面子系统" as PU_UI #F3E5F5 {
+    component "顶部工具栏" as M_HEADER
+    component "侧边栏" as M_SIDEBAR
+    component "内容展示区" as M_CONTENT
+    component "手机模拟器区域" as M_SIM_AREA
+    component "抽屉面板" as M_DRAWER
+  }
+
+  package "交互式需求收集子系统" as PU_INT #FFF3E0 {
+    component "模拟器渲染引擎" as M_RENDERER
+    component "拖拽控制器" as M_DRAG
+    component "组件管理器" as M_COMP
+    component "布局管理器" as M_LAYOUT
+    component "编辑结果序列化器" as M_SERIAL
+  }
+
+  package "需求收集子系统(前端)" as PU_REQ_FE #E8F5E9 {
+    component "配置文件加载器" as M_LOADER
+    component "表格渲染器" as M_TABLE
+    component "需求回答收集器" as M_ANSWER
+    component "结果导出器" as M_EXPORT
+  }
+
+  component "共享状态仓库" as M_STORE
+  component "API客户端" as M_API_CLIENT
+
+  note bottom of PU_FE
+    实现文件：
+    src/
+    ├── main.js
+    ├── App.vue
+    ├── api/          (API客户端)
+    ├── stores/       (共享状态仓库)
+    ├── modules/
+    │   ├── ui/       (界面子系统)
+    │   ├── interactive/ (交互式需求收集子系统)
+    │   └── requirement/ (需求收集子系统-前端)
+    └── assets/
+  end note
+}
+
+' === 后端服务 ===
+package "后端服务\n（可独立部署的API服务）" as PU_BE #FFF9C4 {
+
+  package "需求收集子系统(后端)" as PU_REQ_BE #E8F5E9 {
+    component "文件解析服务" as M_PARSER
+    component "需求存储服务" as M_STORAGE
+    component "静态资源服务" as M_STATIC
+  }
+
+  component "API路由层" as M_ROUTER
+  component "数据模型层" as M_MODEL
+
+  note bottom of PU_BE
+    实现文件：
+    backend/
+    ├── main.py
+    ├── routers/      (API路由层)
+    ├── services/
+    │   ├── parser.py (文件解析服务)
+    │   ├── storage.py (需求存储服务)
+    │   └── static.py (静态资源服务)
+    └── models/       (数据模型层)
+  end note
+}
+
+' === 开发者配置包 ===
+package "开发者配置包\n（开发者交付的配置文件集合）" as PU_CFG #F5F5F5 {
+
+  artifact "需求配置文件 (YAML)" as F_CFG
+  artifact "组件描述文件 (JSON)" as F_COMP
+  artifact "默认设计文件 (JSON)" as F_DEFAULT
+  artifact "组件库文件 (.js/.vue)" as F_LIB
+
+  note bottom of PU_CFG
+    文件结构：
+    dev-config/
+    ├── requirements.yaml
+    ├── components.json
+    ├── default_layout.json
+    └── lib/           (组件库文件)
+  end note
+}
+
+' === 程序单元间关联（虚线） ===
+PU_FE ..> PU_BE : HTTP API\n获取配置数据 / 提交需求结果
+PU_BE ..> PU_CFG : 读取开发者配置\n提供组件库静态资源
+PU_FE ..> PU_CFG : 通过后端间接获取\n配置数据和组件
+
+@enduml

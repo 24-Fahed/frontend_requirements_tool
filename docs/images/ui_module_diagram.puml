@@ -1,0 +1,80 @@
+@startuml 界面子系统_模块图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam RectangleFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+skinparam ComponentFontName SimHei
+skinparam ArrowColor #333333
+skinparam PackageFontSize 14
+skinparam ComponentFontSize 13
+
+title 界面子系统 - 模块图
+
+package "界面子系统" as UI_SYS #F3E5F5 {
+
+  package "顶部工具栏模块" as MOD_HEADER #E1BEE7 {
+    component [AppHeader] as HEADER
+    component [ToolBar] as TOOLBAR
+    note left of MOD_HEADER
+      职责：应用标题展示、
+      全局菜单和操作按钮
+    end note
+  }
+
+  package "侧边栏模块" as MOD_SIDEBAR #E1BEE7 {
+    component [SideBar] as SIDEBAR
+    component [CategoryList] as CAT_LIST
+    note right of MOD_SIDEBAR
+      职责：需求分类列表展示、
+      分类切换导航
+    end note
+  }
+
+  package "内容展示区模块" as MOD_CONTENT #E1BEE7 {
+    component [ContentArea] as CONTENT
+    note left of MOD_CONTENT
+      职责：承载需求收集子系统
+      的表格渲染组件
+    end note
+  }
+
+  package "模拟器区域模块" as MOD_SIM_AREA #E1BEE7 {
+    component [SimulatorArea] as SIM_AREA
+    note right of MOD_SIM_AREA
+      职责：承载交互式需求收集
+      子系统的手机模拟器组件
+    end note
+  }
+
+  package "抽屉面板模块" as MOD_DRAWER #E1BEE7 {
+    component [DrawerPanel] as DRAWER
+    component [ComponentDrawer] as COMP_DRAWER
+    component [LayoutDrawer] as LAYOUT_DRAWER
+    note left of MOD_DRAWER
+      职责：展示组件和布局列表，
+      支持拖拽到模拟器
+    end note
+  }
+
+  package "布局管理模块" as MOD_LAYOUT #E1BEE7 {
+    component [LayoutManager] as LAYOUT_MGR
+    note right of MOD_LAYOUT
+      职责：管理三栏布局的
+      尺寸、折叠和响应式
+    end note
+  }
+}
+
+MOD_HEADER --> MOD_SIDEBAR : 控制分类
+MOD_HEADER --> MOD_DRAWER : 呼出面板
+MOD_LAYOUT --> MOD_SIDEBAR : 管理左侧栏
+MOD_LAYOUT --> MOD_CONTENT : 管理中间区
+MOD_LAYOUT --> MOD_SIM_AREA : 管理右侧区
+MOD_SIDEBAR --> MOD_CONTENT : 切换内容
+MOD_DRAWER --> MOD_SIM_AREA : 拖拽目标
+
+@enduml

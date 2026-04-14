@@ -1,0 +1,98 @@
+@startuml 需求收集子系统_模块图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam RectangleFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+skinparam ComponentFontName SimHei
+skinparam ArrowColor #333333
+skinparam PackageFontSize 14
+skinparam ComponentFontSize 13
+
+title 需求收集子系统 - 模块图
+
+package "需求收集子系统（前端）" as REQ_FE #E8F5E9 {
+
+  package "配置加载模块" as MOD_LOAD #C8E6C9 {
+    component [ConfigLoader] as CFG_LOADER
+    note left of MOD_LOAD
+      职责：通过API获取后端
+      解析后的配置数据
+    end note
+  }
+
+  package "表格渲染模块" as MOD_TABLE #C8E6C9 {
+    component [TableRenderer] as TABLE_R
+    component [QuestionRow] as Q_ROW
+    note right of MOD_TABLE
+      职责：将需求数据渲染为
+      可交互表格，处理用户填写
+    end note
+  }
+
+  package "回答收集模块" as MOD_ANSWER #C8E6C9 {
+    component [AnswerCollector] as ANS_COLL
+    component [InteractiveBridge] as INT_BRIDGE
+    note left of MOD_ANSWER
+      职责：收集文字/选项/交互式
+      三种类型的回答
+    end note
+  }
+
+  package "结果导出模块" as MOD_EXPORT #C8E6C9 {
+    component [ResultExporter] as EXPORTER
+    note right of MOD_EXPORT
+      职责：汇总回答并提交
+      到后端存储
+    end note
+  }
+}
+
+MOD_LOAD --> MOD_TABLE : 提供配置数据
+MOD_TABLE --> MOD_ANSWER : 触发回答收集
+MOD_ANSWER --> MOD_EXPORT : 传递回答数据
+MOD_ANSWER --> INT_BRIDGE : 调用交互式收集
+
+package "需求收集子系统（后端）" as REQ_BE #FFF9C4 {
+
+  package "文件解析模块" as MOD_PARSE #FFF9C4 {
+    component [YamlParser] as YAML_PARSER
+    component [JsonParser] as JSON_PARSER
+    note left of MOD_PARSE
+      职责：解析开发者提供的
+      YAML和JSON配置文件
+    end note
+  }
+
+  package "需求存储模块" as MOD_STORE #FFF9C4 {
+    component [ResultStorage] as RESULT_STORE
+    component [YamlWriter] as YAML_WRITER
+    note right of MOD_STORE
+      职责：将用户需求结果
+      写入YAML和JSON文件
+    end note
+  }
+
+  package "静态资源模块" as MOD_STATIC #FFF9C4 {
+    component [StaticFileServer] as STATIC_SRV
+    note left of MOD_STATIC
+      职责：提供开发者组件库
+      文件的静态访问
+    end note
+  }
+
+  package "数据模型模块" as MOD_MODEL #FFF9C4 {
+    component [Pydantic模型集] as MODELS
+    note right of MOD_MODEL
+      职责：请求响应数据校验
+    end note
+  }
+}
+
+MOD_PARSE --> MOD_MODEL : 使用数据模型
+MOD_STORE --> MOD_MODEL : 使用数据模型
+
+@enduml

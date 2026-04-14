@@ -1,0 +1,70 @@
+{
+  "components": [
+    {
+      "name": "Button",
+      "label": "按钮",
+      "category": "基础组件",
+      "icon": "button-icon",
+      "props": [
+        { "name": "text", "type": "string", "default": "按钮", "label": "按钮文字" },
+        { "name": "type", "type": "enum", "options": ["primary", "default", "warn"], "default": "default", "label": "按钮类型" },
+        { "name": "size", "type": "enum", "options": ["small", "medium", "large"], "default": "medium", "label": "尺寸" }
+      ],
+      "defaultProps": { "text": "按钮", "type": "default", "size": "medium" },
+      "sourceFile": "lib/demo-lib.js",
+      "componentTag": "DemoButton"
+    },
+    {
+      "name": "TextBlock",
+      "label": "文本块",
+      "category": "基础组件",
+      "icon": "text-icon",
+      "props": [
+        { "name": "content", "type": "string", "default": "文本内容", "label": "文本内容" },
+        { "name": "fontSize", "type": "number", "default": 14, "label": "字号" }
+      ],
+      "defaultProps": { "content": "文本内容", "fontSize": 14 },
+      "sourceFile": "lib/demo-lib.js",
+      "componentTag": "DemoTextBlock"
+    },
+    {
+      "name": "Image",
+      "label": "图片",
+      "category": "基础组件",
+      "icon": "image-icon",
+      "props": [
+        { "name": "src", "type": "string", "default": "placeholder", "label": "图片地址" },
+        { "name": "width", "type": "string", "default": "100%", "label": "宽度" },
+        { "name": "height", "type": "number", "default": 150, "label": "高度" }
+      ],
+      "defaultProps": { "src": "placeholder", "width": "100%", "height": 150 },
+      "sourceFile": "lib/demo-lib.js",
+      "componentTag": "DemoImage"
+    },
+    {
+      "name": "Input",
+      "label": "输入框",
+      "category": "基础组件",
+      "icon": "input-icon",
+      "props": [
+        { "name": "placeholder", "type": "string", "default": "请输入", "label": "占位文字" }
+      ],
+      "defaultProps": { "placeholder": "请输入" },
+      "sourceFile": "lib/demo-lib.js",
+      "componentTag": "DemoInput"
+    },
+    {
+      "name": "ProductCard",
+      "label": "产品卡片",
+      "category": "组合组件",
+      "icon": "card-icon",
+      "props": [
+        { "name": "title", "type": "string", "default": "产品名称", "label": "标题" },
+        { "name": "price", "type": "string", "default": "¥0.00", "label": "价格" }
+      ],
+      "defaultProps": { "title": "产品名称", "price": "¥0.00" },
+      "sourceFile": "lib/demo-lib.js",
+      "componentTag": "DemoProductCard"
+    }
+  ]
+}

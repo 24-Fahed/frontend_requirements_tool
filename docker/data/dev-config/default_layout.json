@@ -1,0 +1,39 @@
+{
+  "layouts": [
+    {
+      "id": "home-default",
+      "name": "首页默认布局",
+      "nodes": [
+        {
+          "id": "root",
+          "type": "VStack",
+          "props": { "gap": 8, "padding": 8 },
+          "children": [
+            { "id": "banner", "type": "Image", "props": { "src": "banner-placeholder", "width": "100%", "height": 150 } },
+            { "id": "title", "type": "TextBlock", "props": { "content": "欢迎光临", "fontSize": 18 } },
+            { "id": "grid", "type": "HStack", "props": { "gap": 8 }, "children": [
+              { "id": "btn1", "type": "Button", "props": { "text": "功能一", "type": "primary" } },
+              { "id": "btn2", "type": "Button", "props": { "text": "功能二", "type": "default" } }
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "product-default",
+      "name": "产品页默认布局",
+      "nodes": [
+        {
+          "id": "root",
+          "type": "VStack",
+          "props": { "gap": 10, "padding": 10 },
+          "children": [
+            { "id": "product-img", "type": "Image", "props": { "src": "product-placeholder", "width": "100%", "height": 200 } },
+            { "id": "product-card", "type": "ProductCard", "props": { "title": "示例产品", "price": "¥99.00" } },
+            { "id": "buy-btn", "type": "Button", "props": { "text": "立即购买", "type": "primary" } }
+          ]
+        }
+      ]
+    }
+  ]
+}

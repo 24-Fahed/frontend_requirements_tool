@@ -1,0 +1,83 @@
+@startuml 物理架构图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam RectangleFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+skinparam NodeFontName SimHei
+skinparam ArrowColor #333333
+skinparam NodeFontSize 14
+
+title 需求收集工具 - 物理架构图（部署图）
+
+' === 物理节点 ===
+
+node "用户浏览器" as BROWSER #E8F5E9 {
+  rectangle "前端应用" as DEPLOY_FE #B3E5FC {
+    rectangle "界面子系统\n交互式需求收集子系统\n需求收集子系统(前端)\n共享状态仓库\nAPI客户端" as FE_MODULES #E1F5FE
+  }
+}
+
+node "服务器" as SERVER #FFF9C4 {
+  rectangle "后端服务\n(Uvicorn + FastAPI)" as DEPLOY_BE #FFF9C4 {
+    rectangle "API路由层\n文件解析服务\n需求存储服务\n静态资源服务\n数据模型层" as BE_MODULES #FFFDE7
+  }
+
+  folder "开发者资源目录" as RES_DIR {
+    rectangle "开发者配置包" as DEPLOY_CFG #F5F5F5
+  }
+
+  folder "需求结果目录" as OUT_DIR {
+    rectangle "需求结果文件\n(YAML + JSON)" as RESULT_FILE #F5F5F5
+  }
+}
+
+node "开发者工作站" as DEV_WS #E8F4FD
+
+' === 运行环境标注 ===
+
+note left of BROWSER
+  运行环境：
+  浏览器引擎（V8等）
+  Vue 3 + Vite构建
+  Element Plus + vuedraggable
+  Pinia 状态管理
+end note
+
+note right of SERVER
+  运行环境：
+  Python 3.10+
+  Uvicorn (ASGI)
+  FastAPI + Pydantic
+  PyYAML
+end note
+
+note bottom of DEV_WS
+  开发者职责：
+  1. 编写配置文件和组件库
+  2. 部署到服务器资源目录
+  3. 取回需求结果文件
+end note
+
+' === 部署关系（编号表示数据流顺序） ===
+
+DEV_WS -down-> RES_DIR : ① 部署配置文件和组件库
+BROWSER -right-> DEPLOY_BE : ② HTTP API\n获取配置 / 提交结果
+DEPLOY_BE -down-> RES_DIR : ③ 读取开发者配置
+DEPLOY_BE -down-> OUT_DIR : ④ 写入需求结果
+OUT_DIR .right. DEV_WS : ⑤ 取回需求结果
+
+' === 部署映射表 ===
+
+legend right
+  |= 程序单元 |= 部署节点 |= 运行环境 |
+  | 前端应用 | 用户浏览器 | Vue 3 + Vite |
+  | 后端服务 | 服务器 | Python + Uvicorn |
+  | 开发者配置包 | 服务器文件系统 | 无（静态文件） |
+  | 需求结果 | 服务器文件系统 | 无（输出文件） |
+end legend
+
+@enduml

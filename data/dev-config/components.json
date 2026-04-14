@@ -1,0 +1,173 @@
+{
+  "components": [
+    {
+      "name": "NavBar",
+      "label": "导航栏",
+      "category": "导航组件",
+      "props": [
+        { "name": "title", "type": "string", "default": "页面标题", "label": "标题" },
+        { "name": "leftText", "type": "string", "default": "返回", "label": "左侧文字" },
+        { "name": "rightText", "type": "string", "default": "", "label": "右侧文字" }
+      ],
+      "defaultProps": { "title": "页面标题", "leftText": "返回", "rightText": "" },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanNavBar"
+    },
+    {
+      "name": "Search",
+      "label": "搜索栏",
+      "category": "导航组件",
+      "props": [
+        { "name": "placeholder", "type": "string", "default": "搜索商品", "label": "占位文字" }
+      ],
+      "defaultProps": { "placeholder": "搜索商品" },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanSearch"
+    },
+    {
+      "name": "TabBar",
+      "label": "底部标签栏",
+      "category": "导航组件",
+      "props": [
+        { "name": "items", "type": "string", "default": "首页,分类,购物车,我的", "label": "标签项（逗号分隔）" }
+      ],
+      "defaultProps": { "items": "首页,分类,购物车,我的" },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanTabBar"
+    },
+    {
+      "name": "Button",
+      "label": "按钮",
+      "category": "基础组件",
+      "props": [
+        { "name": "text", "type": "string", "default": "按钮", "label": "按钮文字" },
+        { "name": "type", "type": "enum", "options": ["default", "primary", "success", "danger", "warning"], "default": "default", "label": "类型" },
+        { "name": "size", "type": "enum", "options": ["small", "medium", "large"], "default": "medium", "label": "尺寸" },
+        { "name": "block", "type": "string", "default": "", "label": "是否通栏" }
+      ],
+      "defaultProps": { "text": "按钮", "type": "default", "size": "medium", "block": "" },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanButton"
+    },
+    {
+      "name": "TextBlock",
+      "label": "文本",
+      "category": "基础组件",
+      "props": [
+        { "name": "content", "type": "string", "default": "文本内容", "label": "文本内容" },
+        { "name": "fontSize", "type": "number", "default": 14, "label": "字号" },
+        { "name": "color", "type": "string", "default": "#323233", "label": "颜色" },
+        { "name": "bold", "type": "string", "default": "", "label": "是否加粗" },
+        { "name": "align", "type": "enum", "options": ["left", "center", "right"], "default": "left", "label": "对齐方式" }
+      ],
+      "defaultProps": { "content": "文本内容", "fontSize": 14, "color": "#323233", "bold": "", "align": "left" },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanText"
+    },
+    {
+      "name": "Image",
+      "label": "图片",
+      "category": "基础组件",
+      "props": [
+        { "name": "src", "type": "string", "default": "placeholder", "label": "图片地址" },
+        { "name": "width", "type": "string", "default": "100%", "label": "宽度" },
+        { "name": "height", "type": "number", "default": 150, "label": "高度" },
+        { "name": "radius", "type": "number", "default": 0, "label": "圆角" }
+      ],
+      "defaultProps": { "src": "placeholder", "width": "100%", "height": 150, "radius": 0 },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanImage"
+    },
+    {
+      "name": "Input",
+      "label": "输入框",
+      "category": "基础组件",
+      "props": [
+        { "name": "label", "type": "string", "default": "标签", "label": "标签文字" },
+        { "name": "placeholder", "type": "string", "default": "请输入", "label": "占位文字" },
+        { "name": "inputType", "type": "enum", "options": ["text", "number", "tel"], "default": "text", "label": "输入类型" }
+      ],
+      "defaultProps": { "label": "标签", "placeholder": "请输入", "inputType": "text" },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanInput"
+    },
+    {
+      "name": "Cell",
+      "label": "单元格",
+      "category": "基础组件",
+      "props": [
+        { "name": "title", "type": "string", "default": "标题", "label": "标题" },
+        { "name": "value", "type": "string", "default": "", "label": "右侧内容" },
+        { "name": "isLink", "type": "string", "default": "true", "label": "是否显示箭头" }
+      ],
+      "defaultProps": { "title": "标题", "value": "", "isLink": "true" },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanCell"
+    },
+    {
+      "name": "NoticeBar",
+      "label": "通知栏",
+      "category": "基础组件",
+      "props": [
+        { "name": "text", "type": "string", "default": "通知内容", "label": "通知文字" }
+      ],
+      "defaultProps": { "text": "通知内容" },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanNoticeBar"
+    },
+    {
+      "name": "ProductCard",
+      "label": "商品卡片",
+      "category": "组合组件",
+      "props": [
+        { "name": "title", "type": "string", "default": "商品名称", "label": "商品标题" },
+        { "name": "desc", "type": "string", "default": "商品描述", "label": "描述" },
+        { "name": "price", "type": "string", "default": "¥0.00", "label": "价格" },
+        { "name": "imageHeight", "type": "number", "default": 160, "label": "图片高度" }
+      ],
+      "defaultProps": { "title": "商品名称", "desc": "商品描述", "price": "¥0.00", "imageHeight": 160 },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VanProductCard"
+    },
+    {
+      "name": "VStack",
+      "label": "纵向布局",
+      "category": "布局",
+      "isContainer": true,
+      "maxChildren": -1,
+      "props": [
+        { "name": "gap", "type": "number", "default": 0, "label": "间距" },
+        { "name": "padding", "type": "number", "default": 0, "label": "内边距" }
+      ],
+      "defaultProps": { "gap": 0, "padding": 0 },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "VStack"
+    },
+    {
+      "name": "HStack",
+      "label": "横向布局",
+      "category": "布局",
+      "isContainer": true,
+      "maxChildren": -1,
+      "props": [
+        { "name": "gap", "type": "number", "default": 0, "label": "间距" }
+      ],
+      "defaultProps": { "gap": 0 },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "HStack"
+    },
+    {
+      "name": "Grid2Col",
+      "label": "两列网格",
+      "category": "布局",
+      "isContainer": true,
+      "maxChildren": -1,
+      "props": [
+        { "name": "gap", "type": "number", "default": 8, "label": "间距" }
+      ],
+      "defaultProps": { "gap": 8 },
+      "sourceFile": "lib/vant-components.js",
+      "componentTag": "Grid2Col"
+    }
+  ]
+}

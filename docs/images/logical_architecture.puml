@@ -1,0 +1,122 @@
+@startuml 逻辑架构图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam RectangleFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+skinparam ComponentFontName SimHei
+skinparam InterfaceFontName SimHei
+skinparam ArrowColor #333333
+skinparam PackageBorderColor #2C3E50
+skinparam PackageFontSize 14
+skinparam ComponentFontSize 13
+
+title 需求收集工具 - 逻辑架构图
+
+package "前端 (Vue 3)" as FE #E8F4FD {
+
+  package "界面子系统" as UI_SUB #F3E5F5 {
+    component [顶部工具栏] as HEADER
+    component [侧边栏] as SIDEBAR
+    component [内容展示区] as CONTENT
+    component [手机模拟器区域] as SIMULATOR
+    component [抽屉面板] as DRAWER
+
+    HEADER ..> SIDEBAR : 切换分类
+    HEADER ..> DRAWER : 呼出
+    SIDEBAR ..> CONTENT : 切换内容
+    CONTENT ..> SIMULATOR : 触发交互式收集
+  }
+
+  package "交互式需求收集子系统" as INT_SUB #FFF3E0 {
+    component [模拟器渲染引擎] as RENDERER
+    component [拖拽控制器] as DRAG_CTRL
+    component [组件管理器] as COMP_MGR
+    component [布局管理器] as LAYOUT_MGR
+    component [编辑结果序列化器] as SERIALIZER
+
+    RENDERER ..> COMP_MGR : 加载组件
+    RENDERER ..> LAYOUT_MGR : 加载布局
+    DRAG_CTRL ..> RENDERER : 添加/删除/移动
+    RENDERER ..> SERIALIZER : 输出结果
+  }
+
+  package "需求收集子系统（前端）" as REQ_SUB_FE #E8F5E9 {
+    component [配置文件加载器] as CFG_LOADER
+    component [表格渲染器] as TABLE_RENDER
+    component [需求回答收集器] as ANSWER_COLL
+    component [结果导出器] as EXPORTER
+  }
+
+  SIMULATOR --> RENDERER : 嵌入
+  DRAWER --> DRAG_CTRL : 拖拽源
+  TABLE_RENDER --> ANSWER_COLL : 收集回答
+  ANSWER_COLL ..> SERIALIZER : 获取交互式结果
+  ANSWER_COLL --> EXPORTER : 传递结果
+  CFG_LOADER --> TABLE_RENDER : 提供数据
+}
+
+package "后端 (Python FastAPI)" as BE #FFF9C4 {
+
+  package "需求收集子系统（后端）" as REQ_SUB_BE #E8F5E9 {
+    component [文件解析服务] as FILE_PARSER
+    component [需求存储服务] as REQ_STORAGE
+    component [静态资源服务] as STATIC_SRV
+  }
+
+  component [API路由层] as API_ROUTE
+}
+
+package "外部文件" as EXT #F5F5F5 {
+  artifact "需求配置文件 (YAML)" as CFG_FILE
+  artifact "组件描述文件 (JSON)" as COMP_FILE
+  artifact "默认设计文件 (JSON)" as DEFAULT_FILE
+  artifact "需求结果文件 (YAML+JSON)" as RESULT_FILE
+}
+
+' 前后端交互
+CFG_LOADER --> API_ROUTE : HTTP请求
+EXPORTER --> API_ROUTE : HTTP请求
+API_ROUTE --> FILE_PARSER : 调用
+API_ROUTE --> REQ_STORAGE : 调用
+API_ROUTE --> STATIC_SRV : 调用
+
+' 文件读写
+FILE_PARSER --> CFG_FILE : 读取
+FILE_PARSER --> COMP_FILE : 读取
+FILE_PARSER --> DEFAULT_FILE : 读取
+REQ_STORAGE --> RESULT_FILE : 写入
+
+' 前端内部接口标注
+interface "I_Simulator" as I_SIM
+interface "I_Requirement" as I_REQ
+interface "I_API" as I_API
+
+SERIALIZER -up- I_SIM
+ANSWER_COLL -up- I_REQ
+API_ROUTE -up- I_API
+
+note right of UI_SUB
+  界面子系统
+  负责整体布局和导航
+end note
+
+note right of INT_SUB
+  交互式需求收集子系统
+  负责模拟器渲染和拖拽交互
+end note
+
+note right of REQ_SUB_FE
+  需求收集子系统（前端部分）
+  负责表格展示和回答收集
+end note
+
+note right of REQ_SUB_BE
+  需求收集子系统（后端部分）
+  负责文件解析和结果存储
+end note
+
+@enduml

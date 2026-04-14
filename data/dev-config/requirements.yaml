@@ -1,0 +1,148 @@
+project:
+  id: "vant-shop"
+  name: "商城小程序需求收集"
+  description: "基于Vant组件的商城小程序需求调研"
+
+categories:
+  - id: "basic"
+    name: "基本信息"
+    order: 1
+    questions:
+      - id: "q1"
+        text: "您的企业/店铺名称是什么？"
+        purpose: "用于小程序的标题栏和展示"
+        type: text
+        note: "请填写完整的名称"
+
+      - id: "q2"
+        text: "您的店铺主要经营什么类目？"
+        purpose: "确定小程序的功能方向"
+        type: option
+        options:
+          - "服装鞋帽"
+          - "食品饮料"
+          - "家居百货"
+          - "数码电子"
+          - "美妆护肤"
+          - "自定义"
+        allowCustom: true
+        note: "可多选，选择'自定义'可自行填写"
+
+      - id: "q3"
+        text: "您的联系方式？"
+        purpose: "用于后续沟通确认需求"
+        type: text
+        note: "手机号或微信号"
+
+  - id: "home-design"
+    name: "首页设计"
+    order: 2
+    questions:
+      - id: "q4"
+        text: "请设计小程序首页的布局"
+        purpose: "了解您对首页布局和功能的期望"
+        type: interactive
+        interactiveConfig:
+          defaultLayout: "home-default"
+        note: "从右侧面板拖动组件到手机模拟器中，设计您期望的首页效果"
+
+      - id: "q5"
+        text: "首页是否需要轮播图？"
+        purpose: "确定首页顶部展示形式"
+        type: option
+        options:
+          - "需要，展示3-5张推荐图"
+          - "需要，只展示1张大图"
+          - "不需要"
+        note: ""
+
+      - id: "q6"
+        text: "首页底部的导航栏需要哪些标签？"
+        purpose: "确定小程序的页面结构"
+        type: option
+        options:
+          - "首页"
+          - "分类"
+          - "购物车"
+          - "我的"
+          - "客服"
+          - "消息"
+        allowCustom: true
+        note: "通常建议3-5个标签"
+
+  - id: "product-design"
+    name: "商品页面设计"
+    order: 3
+    questions:
+      - id: "q7"
+        text: "请设计商品列表页的布局"
+        purpose: "了解商品展示方式的偏好"
+        type: interactive
+        interactiveConfig:
+          defaultLayout: "product-list"
+        note: "可以调整商品卡片数量和排列方式"
+
+      - id: "q8"
+        text: "商品展示需要哪些信息？"
+        purpose: "确定商品卡片的展示字段"
+        type: option
+        options:
+          - "商品图片"
+          - "商品名称"
+          - "价格"
+          - "销量"
+          - "标签（如新品、热销）"
+          - "评分"
+        allowCustom: true
+        note: "可多选"
+
+  - id: "profile-design"
+    name: "个人中心设计"
+    order: 4
+    questions:
+      - id: "q9"
+        text: "请设计个人中心页面的布局"
+        purpose: "了解个人中心的功能需求"
+        type: interactive
+        interactiveConfig:
+          defaultLayout: "profile-default"
+        note: "可以增减功能入口"
+
+      - id: "q10"
+        text: "个人中心需要哪些功能？"
+        purpose: "确定需要开发的个人中心功能"
+        type: option
+        options:
+          - "我的订单"
+          - "收货地址"
+          - "优惠券"
+          - "收藏夹"
+          - "浏览记录"
+          - "联系客服"
+          - "关于我们"
+        allowCustom: true
+        note: "可多选"
+
+  - id: "form-design"
+    name: "表单页面设计"
+    order: 5
+    questions:
+      - id: "q11"
+        text: "请设计一个预约/下单表单页面"
+        purpose: "了解表单页面的字段需求"
+        type: interactive
+        interactiveConfig:
+          defaultLayout: "form-default"
+        note: "拖入输入框组件来设计您需要的表单"
+
+      - id: "q12"
+        text: "您期望的整体配色风格？"
+        purpose: "确定小程序的主题色"
+        type: option
+        options:
+          - "蓝色系（专业商务）"
+          - "红色系（热情促销）"
+          - "绿色系（清新自然）"
+          - "橙色系（活力温暖）"
+          - "黑色系（高端简约）"
+        note: "选择最符合您品牌调性的风格"

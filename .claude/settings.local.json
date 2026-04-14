@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(java:*)",
+      "Bash(ls:*)",
+      "Bash(npm:*)",
+      "Bash(mkdir:*)",
+      "Bash(pip install:*)",
+      "Bash(timeout 5 python:*)",
+      "Bash(npx vite:*)",
+      "Bash(docker:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

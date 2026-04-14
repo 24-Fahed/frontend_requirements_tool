@@ -1,0 +1,199 @@
+@startuml 需求收集子系统_类图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ClassFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+skinparam ArrowColor #333333
+skinparam ClassFontSize 12
+skinparam ClassAttributeFontSize 11
+skinparam ClassMethodFontSize 11
+
+title 需求收集子系统 - 构件图（类图）
+
+' ======= 前端 =======
+
+package "需求收集子系统（前端）" as REQ_FE #E8F5E9 {
+
+  ' 配置加载模块
+  package "配置加载模块" as MOD_LOAD #C8E6C9 {
+
+    class ConfigLoader {
+      - apiClient: ApiClient
+      - cache: Map<string, any>
+      + loadRequirements(categoryId?: string): Promise<RequirementData>
+      + loadComponents(): Promise<ComponentConfig>
+      + loadDefaultLayout(layoutId: string): Promise<LayoutData>
+      + clearCache(): void
+    }
+  }
+
+  ' 表格渲染模块
+  package "表格渲染模块" as MOD_TABLE #C8E6C9 {
+
+    class TableRenderer {
+      - currentCategory: Category | null
+      - questions: Question[]
+      + setCategory(category: Category): void
+      + render(): VNode
+      + refresh(): void
+    }
+
+    class QuestionRow {
+      + question: Question
+      + answer: Answer | null
+      + renderInput(): VNode
+      + onTextChange(text: string): void
+      + onOptionSelect(options: string[]): void
+      + onInteractiveTrigger(): void
+    }
+  }
+
+  ' 回答收集模块
+  package "回答收集模块" as MOD_ANSWER #C8E6C9 {
+
+    class AnswerCollector {
+      - answers: Map<string, Answer>
+      + collect(questionId: string, answer: Answer): void
+      + get(questionId: string): Answer | null
+      + getAll(): Answer[]
+      + remove(questionId: string): void
+      + clear(): void
+    }
+
+    class InteractiveBridge {
+      - simulator: I_Simulator
+      - currentQuestionId: string | null
+      + openSimulator(questionId: string, defaultLayoutId?: string): void
+      + saveSimulatorResult(): LayoutData
+      + closeSimulator(): void
+    }
+  }
+
+  ' 结果导出模块
+  package "结果导出模块" as MOD_EXPORT #C8E6C9 {
+
+    class ResultExporter {
+      - apiClient: ApiClient
+      + exportAsJson(answers: Answer[]): object
+      + exportAsYaml(answers: Answer[]): string
+      + submit(answers: Answer[]): Promise<Result>
+    }
+  }
+}
+
+' ======= 后端 =======
+
+package "需求收集子系统（后端）" as REQ_BE #FFF9C4 {
+
+  ' 数据模型模块
+  package "数据模型模块" as MOD_MODEL #FFFDE7 {
+
+    class RequirementDataModel {
+      + project: ProjectModel
+      + categories: list[CategoryModel]
+    }
+
+    class CategoryModel {
+      + id: str
+      + name: str
+      + order: int
+      + questions: list[QuestionModel]
+    }
+
+    class QuestionModel {
+      + id: str
+      + text: str
+      + purpose: str
+      + type: str
+      + options: list[str] | None
+      + allow_custom: bool
+      + interactive_config: dict | None
+      + note: str | None
+    }
+
+    class AnswerModel {
+      + category_id: str
+      + question_id: str
+      + type: str
+      + value: Any
+      + custom_value: str | None
+    }
+
+    class ResultModel {
+      + project: ProjectModel
+      + submitted_at: str
+      + answers: list[AnswerModel]
+    }
+  }
+
+  ' 文件解析模块
+  package "文件解析模块" as MOD_PARSE #FFFDE7 {
+
+    class YamlParser {
+      + parse_requirements(file_path: str): RequirementDataModel
+    }
+
+    class JsonParser {
+      + parse_components(file_path: str): dict
+      + parse_layouts(file_path: str): dict
+      + parse_default_layout(file_path: str, layout_id: str): dict
+    }
+  }
+
+  ' 需求存储模块
+  package "需求存储模块" as MOD_STORE #FFFDE7 {
+
+    class ResultStorage {
+      + save(result: ResultModel, output_dir: str): void
+    }
+
+    class YamlWriter {
+      + write_yaml(data: ResultModel, file_path: str): void
+      + write_json(data: ResultModel, file_path: str): void
+    }
+  }
+
+  ' 静态资源模块
+  package "静态资源模块" as MOD_STATIC #FFFDE7 {
+
+    class StaticFileServer {
+      + get_file(path: str): FileResponse
+      + list_files(dir_path: str): list[str]
+    }
+  }
+}
+
+' ======= 前端数据类 =======
+class Answer {
+  + questionId: string
+  + categoryId: string
+  + type: string
+  + value: string | string[] | LayoutData
+  + customValue: string | null
+}
+
+' ======= 关系 =======
+' 前端内部
+TableRenderer *-- QuestionRow : 包含多个
+ConfigLoader ..> TableRenderer : 提供数据
+QuestionRow --> AnswerCollector : 提交回答
+QuestionRow --> InteractiveBridge : 触发交互式
+AnswerCollector *-- Answer : 包含多个
+ResultExporter --> AnswerCollector : 获取全部回答
+InteractiveBridge ..> AnswerCollector : 回写交互式结果
+
+' 后端内部
+RequirementDataModel *-- CategoryModel : 包含
+CategoryModel *-- QuestionModel : 包含
+ResultModel *-- AnswerModel : 包含
+YamlParser --> RequirementDataModel : 输出
+JsonParser --> CategoryModel : 输出
+ResultStorage --> YamlWriter : 使用
+ResultStorage --> ResultModel : 输入
+YamlWriter --> ResultModel : 输入
+
+@enduml

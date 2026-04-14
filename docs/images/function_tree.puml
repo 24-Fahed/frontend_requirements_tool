@@ -1,0 +1,89 @@
+@startuml 功能树
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam ArrowColor #333333
+skinparam RectangleBorderColor #4A90D9
+skinparam RectangleFontSize 14
+skinparam PackageBorderColor #2C3E50
+skinparam PackageFontSize 16
+skinparam PackageFontStyle bold
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam RectangleFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+
+title 需求收集工具 - 功能树
+
+rectangle "需求收集工具" as ROOT #E8F4FD {
+
+  package "交互式需求收集功能组" as G1 #FFF3E0 {
+    rectangle "手机模拟界面显示" as F1_1 #FFE0B2
+    rectangle "组件拖动添加" as F1_2 #FFE0B2
+    rectangle "布局拖动添加" as F1_3 #FFE0B2
+    rectangle "组件/布局删除" as F1_4 #FFE0B2
+    rectangle "模拟界面重置" as F1_5 #FFE0B2
+    rectangle "默认设计加载" as F1_6 #FFE0B2
+    rectangle "编辑结果保存" as F1_7 #FFE0B2
+
+    F1_1 -- F1_2
+    F1_1 -- F1_3
+    F1_1 -- F1_4
+    F1_1 -- F1_5
+    F1_1 -- F1_6
+    F1_1 -- F1_7
+  }
+
+  package "需求收集功能组" as G2 #E8F5E9 {
+    rectangle "需求配置文件解析" as F2_1 #C8E6C9
+    rectangle "交互式需求文件解析" as F2_2 #C8E6C9
+    rectangle "表格式需求展示" as F2_3 #C8E6C9
+    rectangle "用户需求收集" as F2_4 #C8E6C9
+    rectangle "交互式需求结果采集" as F2_5 #C8E6C9
+    rectangle "需求结果存储为文件" as F2_6 #C8E6C9
+
+    F2_1 -- F2_3
+    F2_2 -- F2_5
+    F2_3 -- F2_4
+    F2_5 -- F2_6
+    F2_4 -- F2_6
+  }
+
+  package "界面功能组" as G3 #F3E5F5 {
+    rectangle "侧边栏展示与切换" as F3_1 #E1BEE7
+    rectangle "中间内容展示区" as F3_2 #E1BEE7
+    rectangle "手机模拟器区域" as F3_3 #E1BEE7
+    rectangle "顶部工具栏" as F3_4 #E1BEE7
+    rectangle "组件/布局抽屉面板" as F3_5 #E1BEE7
+
+    F3_4 -- F3_1
+    F3_4 -- F3_5
+    F3_1 -- F3_2
+    F3_1 -- F3_3
+  }
+
+  ROOT -- G1
+  ROOT -- G2
+  ROOT -- G3
+}
+
+note right of G1
+  提供可视化手机模拟界面
+  支持组件和布局的拖拽操作
+  支持默认设计加载与重置
+end note
+
+note right of G2
+  解析开发者提供的配置文件
+  以表格形式展示需求问题
+  收集并存储用户需求结果
+end note
+
+note right of G3
+  三栏布局：侧边栏+内容区+模拟器
+  顶部工具栏提供全局操作
+  抽屉面板提供组件/布局选择
+end note
+
+@enduml

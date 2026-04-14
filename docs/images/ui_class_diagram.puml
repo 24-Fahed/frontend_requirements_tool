@@ -1,0 +1,152 @@
+@startuml 界面子系统_类图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam NoteFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ClassFontName SimHei
+skinparam TitleFontName SimHei
+skinparam LegendFontName SimHei
+skinparam ArrowColor #333333
+skinparam ClassFontSize 12
+skinparam ClassAttributeFontSize 11
+skinparam ClassMethodFontSize 11
+
+title 界面子系统 - 构件图（类图）
+
+package "界面子系统" as UI_SYS #F3E5F5 {
+
+  ' 顶部工具栏模块
+  package "顶部工具栏模块" as MOD_HEADER #E1BEE7 {
+
+    class AppHeader {
+      + title: string
+      + menuItems: MenuItem[]
+      + render(): VNode
+    }
+
+    class ToolBar {
+      + onToggleSidebar(): void
+      + onToggleDrawer(): void
+      + onReset(): void
+      + onExport(): void
+    }
+
+    class MenuItem {
+      + label: string
+      + icon: string
+      + action: string
+    }
+  }
+
+  ' 侧边栏模块
+  package "侧边栏模块" as MOD_SIDEBAR #E1BEE7 {
+
+    class SideBar {
+      - collapsed: boolean
+      - selectedCategoryId: string | null
+      + toggle(): void
+      + setCollapsed(collapsed: boolean): void
+      + render(): VNode
+    }
+
+    class CategoryList {
+      - categories: Category[]
+      - activeId: string | null
+      + setCategories(categories: Category[]): void
+      + setActive(id: string): void
+      + onCategoryChange(callback: Function): void
+      + render(): VNode
+    }
+  }
+
+  ' 内容展示区模块
+  package "内容展示区模块" as MOD_CONTENT #E1BEE7 {
+
+    class ContentArea {
+      - currentView: string
+      - viewData: object | null
+      + setView(viewName: string, data?: object): void
+      + render(): VNode
+    }
+  }
+
+  ' 模拟器区域模块
+  package "模拟器区域模块" as MOD_SIM_AREA #E1BEE7 {
+
+    class SimulatorArea {
+      - visible: boolean
+      - simulatorComponent: Component | null
+      + setVisible(visible: boolean): void
+      + mountSimulator(component: Component): void
+      + unmountSimulator(): void
+      + render(): VNode
+    }
+  }
+
+  ' 抽屉面板模块
+  package "抽屉面板模块" as MOD_DRAWER #E1BEE7 {
+
+    class DrawerPanel {
+      - open: boolean
+      - activeTab: "component" | "layout"
+      + toggle(): void
+      + setActiveTab(tab: string): void
+      + close(): void
+      + render(): VNode
+    }
+
+    class ComponentDrawer {
+      - components: ComponentInfo[]
+      - registry: ComponentRegistry
+      + setComponents(components: ComponentInfo[]): void
+      + render(): VNode
+    }
+
+    class LayoutDrawer {
+      - layouts: LayoutInfo[]
+      - registry: LayoutRegistry
+      + setLayouts(layouts: LayoutInfo[]): void
+      + render(): VNode
+    }
+  }
+
+  ' 布局管理模块
+  package "布局管理模块" as MOD_LAYOUT #E1BEE7 {
+
+    class LayoutManager {
+      - sidebarWidth: number
+      - contentWidth: number
+      - simulatorWidth: number
+      - simulatorVisible: boolean
+      + setSidebarWidth(width: number): void
+      + toggleSimulator(visible: boolean): void
+      + getContentWidth(): number
+      + getLayoutConfig(): LayoutConfig
+    }
+
+    class LayoutConfig {
+      + sidebarWidth: number
+      + contentMinWidth: number
+      + simulatorWidth: number
+      + simulatorVisible: boolean
+    }
+  }
+}
+
+' === 关系 ===
+AppHeader *-- ToolBar : 包含
+AppHeader *-- MenuItem : 包含多个
+SideBar *-- CategoryList : 包含
+DrawerPanel *-- ComponentDrawer : 包含
+DrawerPanel *-- LayoutDrawer : 包含
+LayoutManager *-- LayoutConfig : 包含
+
+LayoutManager --> SideBar : 控制宽度
+LayoutManager --> ContentArea : 控制宽度
+LayoutManager --> SimulatorArea : 控制显隐和宽度
+ToolBar --> SideBar : 控制折叠
+ToolBar --> DrawerPanel : 控制开关
+ToolBar --> SimulatorArea : 控制显隐
+
+@enduml
