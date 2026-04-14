@@ -1,13 +1,95 @@
 <script setup>
-import { ref } from 'vue'
+import {
+  computed,
+  defineComponent,
+  h,
+  onMounted,
+  shallowRef,
+  ref,
+  watch,
+} from 'vue'
 import { useAppStore } from '../../../stores/app'
+import {
+  preloadComponentLibraries,
+  resolveRuntimeComponent,
+} from '../../interactive/services/componentLoader'
+import { encodeDragPayload } from '../../interactive/services/dragPayload'
 
 const store = useAppStore()
 const activeTab = ref('component')
 
+const previewMetas = computed(() => [...store.componentList, ...store.layoutList])
+
 function handleClose() {
   store.drawerOpen = false
 }
+
+function startExternalDrag(event, sourceType, item) {
+  event.dataTransfer.effectAllowed = 'copy'
+  event.dataTransfer.setData('text/plain', encodeDragPayload({
+    kind: 'palette-item',
+    sourceType,
+    sourceName: item.name,
+  }))
+}
+
+onMounted(async () => {
+  await preloadComponentLibraries(previewMetas.value)
+})
+
+watch(previewMetas, async (value) => {
+  await preloadComponentLibraries(value)
+}, { deep: true })
+
+const PanelPreview = defineComponent({
+  name: 'PanelPreview',
+  props: {
+    meta: {
+      type: Object,
+      required: true,
+    },
+  },
+  setup(props) {
+    const runtimeComponent = shallowRef(null)
+
+    const previewProps = computed(() => {
+      const propsValue = { ...(props.meta.defaultProps || {}) }
+      if (typeof propsValue.items === 'string') {
+        propsValue.items = propsValue.items
+          .replaceAll('，', ',')
+          .split(',')
+          .map(item => item.trim())
+          .filter(Boolean)
+      }
+      return propsValue
+    })
+
+    async function loadPreviewComponent() {
+      runtimeComponent.value = await resolveRuntimeComponent(props.meta)
+    }
+
+    watch(() => props.meta, loadPreviewComponent, { immediate: true })
+
+    return () => {
+      if (!runtimeComponent.value) {
+        return h('div', { class: 'panel-preview__placeholder' }, props.meta.label)
+      }
+
+      const slots = props.meta.isContainer
+        ? {
+            default: () => [
+              h('div', { class: 'panel-preview__slot' }, 'Slot A'),
+              h('div', { class: 'panel-preview__slot' }, 'Slot B'),
+            ],
+          }
+        : undefined
+
+      return h('div', { class: 'panel-preview' }, [
+        h(runtimeComponent.value, previewProps.value, slots),
+      ])
+    }
+  },
+})
 </script>
 
 <template>
@@ -25,10 +107,11 @@ function handleClose() {
           :key="comp.name"
           class="drawer-card"
           draggable="true"
-          @dragstart="$event.dataTransfer.setData('type', 'component'); $event.dataTransfer.setData('name', comp.name)"
+          @dragstart="startExternalDrag($event, 'component', comp)"
         >
-          <div><strong>{{ comp.label }}</strong></div>
-          <div style="font-size: 11px; color: #909399;">{{ comp.category }} - {{ comp.name }}</div>
+          <PanelPreview :meta="comp" />
+          <div class="drawer-card__title">{{ comp.label }}</div>
+          <div class="drawer-card__meta">{{ comp.category }} · {{ comp.name }}</div>
         </div>
       </el-tab-pane>
       <el-tab-pane label="布局" name="layout">
@@ -37,10 +120,11 @@ function handleClose() {
           :key="layout.name"
           class="drawer-card"
           draggable="true"
-          @dragstart="$event.dataTransfer.setData('type', 'layout'); $event.dataTransfer.setData('name', layout.name)"
+          @dragstart="startExternalDrag($event, 'layout', layout)"
         >
-          <div><strong>{{ layout.label }}</strong></div>
-          <div style="font-size: 11px; color: #909399;">{{ layout.isContainer ? '容器' : '非容器' }}</div>
+          <PanelPreview :meta="layout" />
+          <div class="drawer-card__title">{{ layout.label }}</div>
+          <div class="drawer-card__meta">{{ layout.isContainer ? '容器布局' : '布局' }} · {{ layout.name }}</div>
         </div>
       </el-tab-pane>
     </el-tabs>

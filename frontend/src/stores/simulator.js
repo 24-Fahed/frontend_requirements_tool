@@ -70,6 +70,10 @@ export const useSimulatorStore = defineStore('simulator', () => {
 
   // 移动节点
   function moveNode(nodeId, targetParentId, index) {
+    if (!nodeId) return
+    if (nodeId === targetParentId) return
+    if (targetParentId && isDescendant(nodeId, targetParentId)) return
+
     const node = extractFromTree(nodeTree.value, nodeId)
     if (!node) return
 
@@ -139,6 +143,20 @@ export const useSimulatorStore = defineStore('simulator', () => {
       }
     }
     return null
+  }
+
+  function isDescendant(ancestorId, targetId) {
+    const ancestor = findNode(nodeTree.value, ancestorId)
+    if (!ancestor?.children?.length) return false
+    return containsNode(ancestor.children, targetId)
+  }
+
+  function containsNode(nodes, id) {
+    for (const node of nodes) {
+      if (node.id === id) return true
+      if (node.children && containsNode(node.children, id)) return true
+    }
+    return false
   }
 
   function deepClone(obj) {

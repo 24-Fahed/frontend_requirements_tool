@@ -222,20 +222,88 @@ html, body, #app {
 
 /* 抽屉面板内的组件卡片 */
 .drawer-card {
-  padding: 8px 12px;
-  margin: 4px 0;
-  background: #f5f7fa;
+  padding: 10px;
+  margin: 8px 0;
+  background: #fff;
   border: 1px solid #e4e7ed;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: grab;
   font-size: 13px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .drawer-card:hover {
   border-color: #409EFF;
+  box-shadow: 0 6px 18px rgba(64, 158, 255, 0.12);
+  transform: translateY(-1px);
 }
 
 .drawer-card:active {
   cursor: grabbing;
+}
+
+.drawer-card__title {
+  margin-top: 8px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.drawer-card__meta {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #909399;
+}
+
+.panel-preview {
+  min-height: 72px;
+  padding: 8px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px dashed #dcdfe6;
+  overflow: hidden;
+}
+
+.panel-preview > * {
+  pointer-events: none;
+}
+
+.panel-preview__placeholder {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px dashed #dcdfe6;
+}
+
+.panel-preview__slot {
+  min-height: 24px;
+  border: 1px dashed #c0c4cc;
+  border-radius: 4px;
+  background: rgba(64, 158, 255, 0.08);
+  color: #606266;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.phone-empty-state {
+  color: #c0c4cc;
+  text-align: center;
+  padding: 40px 16px;
+  font-size: 13px;
+}
+
+.sim-node-fallback__title {
+  font-weight: 600;
+}
+
+.sim-node-fallback__props {
+  margin-top: 4px;
+  color: #909399;
+  font-size: 11px;
+  word-break: break-all;
 }

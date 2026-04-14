@@ -13,6 +13,9 @@ import {
   preloadComponentLibraries,
   resolveRuntimeComponent,
 } from '../services/componentLoader'
+import {
+  decodeDragPayload,
+} from '../services/dragPayload'
 
 const simStore = useSimulatorStore()
 const appStore = useAppStore()
@@ -30,13 +33,21 @@ function findSource(sourceType, sourceName) {
 
 function onDragOver(event) {
   event.preventDefault()
-  event.dataTransfer.dropEffect = 'copy'
+  const payload = decodeDragPayload(event.dataTransfer.getData('text/plain'))
+  event.dataTransfer.dropEffect = payload?.kind === 'existing-node' ? 'move' : 'copy'
 }
 
-function addDraggedNode(event, parentId = null) {
-  const sourceType = event.dataTransfer.getData('type')
-  const sourceName = event.dataTransfer.getData('name')
-  const source = findSource(sourceType, sourceName)
+function applyDragPayload(payload, parentId = null) {
+  if (!payload) {
+    return
+  }
+
+  if (payload.kind === 'existing-node') {
+    simStore.moveNode(payload.nodeId, parentId)
+    return
+  }
+
+  const source = findSource(payload.sourceType, payload.sourceName)
 
   if (!source) {
     return
@@ -47,7 +58,8 @@ function addDraggedNode(event, parentId = null) {
 
 function onDrop(event) {
   event.preventDefault()
-  addDraggedNode(event, null)
+  const payload = decodeDragPayload(event.dataTransfer.getData('text/plain'))
+  applyDragPayload(payload, null)
 }
 
 function handleDropOnNode(payload, parentId) {
@@ -55,7 +67,8 @@ function handleDropOnNode(payload, parentId) {
   const targetParentId = payload?.parentId ?? parentId
   dropEvent.preventDefault()
   dropEvent.stopPropagation()
-  addDraggedNode(dropEvent, targetParentId)
+  const dragPayload = decodeDragPayload(dropEvent.dataTransfer.getData('text/plain'))
+  applyDragPayload(dragPayload, targetParentId)
 }
 
 function selectNode(nodeId) {
@@ -138,7 +151,8 @@ const SimNode = defineComponent({
       }
       event.preventDefault()
       event.stopPropagation()
-      event.dataTransfer.dropEffect = 'copy'
+      const payload = decodeDragPayload(event.dataTransfer.getData('text/plain'))
+      event.dataTransfer.dropEffect = payload?.kind === 'existing-node' ? 'move' : 'copy'
     }
 
     function handleDrop(event) {
@@ -148,6 +162,15 @@ const SimNode = defineComponent({
       event.preventDefault()
       event.stopPropagation()
       emit('drop-on', { event, parentId: props.node.id })
+    }
+
+    function handleDragStart(event) {
+      event.stopPropagation()
+      event.dataTransfer.effectAllowed = 'move'
+      event.dataTransfer.setData('text/plain', JSON.stringify({
+        kind: 'existing-node',
+        nodeId: props.node.id,
+      }))
     }
 
     watch(meta, loadRuntimeComponent, { immediate: true })
@@ -183,6 +206,8 @@ const SimNode = defineComponent({
           event.stopPropagation()
           emit('select', props.node.id)
         },
+        draggable: true,
+        onDragstart: handleDragStart,
         onDragover: handleDragOver,
         onDrop: handleDrop,
       }, [
