@@ -34,7 +34,9 @@ export const useAppStore = defineStore('app', () => {
   // 加载组件描述
   async function loadComponents() {
     const data = await api.getComponents()
-    componentList.value = data.components || []
+    const allComponents = data.components || []
+    componentList.value = allComponents.filter(item => !item.isContainer)
+    layoutList.value = allComponents.filter(item => item.isContainer)
   }
 
   // 加载默认布局

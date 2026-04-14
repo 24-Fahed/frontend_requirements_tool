@@ -50,9 +50,9 @@ function onDrop(event) {
   addDraggedNode(event, null)
 }
 
-function handleDropOnNode(event, parentId) {
-  const dropEvent = event?.event || event
-  const targetParentId = event?.parentId ?? parentId
+function handleDropOnNode(payload, parentId) {
+  const dropEvent = payload?.event || payload
+  const targetParentId = payload?.parentId ?? parentId
   dropEvent.preventDefault()
   dropEvent.stopPropagation()
   addDraggedNode(dropEvent, targetParentId)
@@ -104,7 +104,7 @@ const SimNode = defineComponent({
           result[key] = Array.isArray(value)
             ? value
             : String(value)
-              .replaceAll('ï¼?, ',')
+              .replaceAll('ï¼Œ', ',')
               .split(',')
               .map(item => item.trim())
               .filter(Boolean)
@@ -112,32 +112,12 @@ const SimNode = defineComponent({
         }
 
         const propDef = propDefs.find(item => item.name === key)
-        if (!propDef) {
-          result[key] = value
-          continue
-        }
-
-        if (propDef.type === 'number') {
+        if (propDef?.type === 'number') {
           result[key] = Number(value)
           continue
         }
 
-        if (propDef.type === 'boolean') {
-          result[key] = value === true || value === 'true'
-          continue
-        }
-
-        if (key === 'items') {
-          result[key] = Array.isArray(value)
-            ? value
-            : String(value)
-              .split(/[,ï¼Œ]/)
-              .map(item => item.trim())
-              .filter(Boolean)
-          continue
-        }
-
-        if (key === 'bold' || key === 'plain' || key === 'square' || key === 'block' || key === 'isLink') {
+        if (propDef?.type === 'boolean' || ['bold', 'plain', 'square', 'block', 'isLink'].includes(key)) {
           result[key] = value === true || value === 'true'
           continue
         }
@@ -167,95 +147,63 @@ const SimNode = defineComponent({
       }
       event.preventDefault()
       event.stopPropagation()
-      emit('drop-on', event, props.node.id)
-    }
-
-    function forwardDrop(...args) {
-      emit('drop-on', ...args)
+      emit('drop-on', { event, parentId: props.node.id })
     }
 
     watch(meta, loadRuntimeComponent, { immediate: true })
 
-    return {
-      forwardDrop,
-      handleDragOver,
-      handleDrop,
-      isContainer,
-      isSelected,
-      meta,
-      normalizedProps,
-      runtimeComponent,
-      emit,
+    return () => {
+      const childNodes = (props.node.children || []).map(child =>
+        h(SimNode, {
+          key: child.id,
+          node: child,
+          metaMap: props.metaMap,
+          selectedNodeId: props.selectedNodeId,
+          onSelect: (nodeId) => emit('select', nodeId),
+          onDelete: (nodeId) => emit('delete', nodeId),
+          onDropOn: (payload) => emit('drop-on', payload),
+        })
+      )
+
+      const renderedContent = runtimeComponent.value
+        ? h(runtimeComponent.value, normalizedProps.value, isContainer.value ? {
+          default: () => childNodes,
+        } : undefined)
+        : h('div', { class: 'sim-node-fallback' }, [
+          h('div', { class: 'sim-node-fallback__title' }, props.node.type),
+          Object.keys(normalizedProps.value).length
+            ? h('div', { class: 'sim-node-fallback__props' }, JSON.stringify(normalizedProps.value))
+            : null,
+          ...childNodes,
+        ])
+
+      return h('div', {
+        class: ['sim-node', { selected: isSelected.value, 'drop-zone-active': isContainer.value }],
+        onClick: (event) => {
+          event.stopPropagation()
+          emit('select', props.node.id)
+        },
+        onDragover: handleDragOver,
+        onDrop: handleDrop,
+      }, [
+        h('span', {
+          class: 'delete-btn',
+          onClick: (event) => {
+            event.stopPropagation()
+            emit('delete', props.node.id)
+          },
+        }, 'Ã—'),
+        h('span', { class: 'node-label' }, meta.value?.label || props.node.type),
+        renderedContent,
+      ])
     }
   },
-  template: `
-    <div
-      class="sim-node"
-      :class="{ selected: isSelected, 'drop-zone-active': isContainer }"
-      @click.stop="emit('select', node.id)"
-      @dragover="handleDragOver"
-      @drop="handleDrop"
-    >
-      <span
-        class="delete-btn"
-        @click.stop="emit('delete', node.id)"
-      >Ã—</span>
-      <span class="node-label">{{ meta?.label || node.type }}</span>
-
-      <component
-        v-if="runtimeComponent"
-        :is="runtimeComponent"
-        v-bind="normalizedProps"
-      >
-        <template
-          v-for="child in node.children || []"
-          :key="child.id"
-        >
-          <SimNode
-            :node="child"
-            :meta-map="metaMap"
-            :selected-node-id="selectedNodeId"
-            @select="emit('select', $event)"
-            @delete="emit('delete', $event)"
-            @drop-on="forwardDrop"
-          />
-        </template>
-      </component>
-
-      <div
-        v-else
-        class="sim-node-fallback"
-      >
-        <div class="sim-node-fallback__title">{{ node.type }}</div>
-        <div
-          v-if="Object.keys(normalizedProps).length"
-          class="sim-node-fallback__props"
-        >
-          {{ normalizedProps }}
-        </div>
-        <template
-          v-for="child in node.children || []"
-          :key="child.id"
-        >
-          <SimNode
-            :node="child"
-            :meta-map="metaMap"
-            :selected-node-id="selectedNodeId"
-            @select="emit('select', $event)"
-            @delete="emit('delete', $event)"
-            @drop-on="forwardDrop"
-          />
-        </template>
-      </div>
-    </div>
-  `,
-  components: {},
 })
 </script>
 
 <template>
   <div class="phone-frame">
-    <div class="phone-status-bar">Ä£ÄâÆ÷</div>
+    <div class="phone-status-bar">Simulator</div>
     <div
       class="phone-screen"
       @dragover="onDragOver"
@@ -263,7 +211,8 @@ const SimNode = defineComponent({
     >
       <template v-if="simStore.nodeTree.length === 0">
         <div class="phone-empty-state">
-          ´ÓÓÒ²àÃæ°åÍÏ¶¯×é¼þ»ò²¼¾Öµ½ÕâÀï
+          Drag components or layouts here from the right panel
+        </div>
       </template>
 
       <SimNode
