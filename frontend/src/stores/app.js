@@ -37,6 +37,7 @@ export const useAppStore = defineStore('app', () => {
     const allComponents = data.components || []
     componentList.value = allComponents.filter(item => !item.isContainer)
     layoutList.value = allComponents.filter(item => item.isContainer)
+    console.log('[DEBUG #21] loadComponents:', { total: allComponents.length, components: componentList.value.length, layouts: layoutList.value.length, sample: allComponents[0] })
   }
 
   // 加载默认布局

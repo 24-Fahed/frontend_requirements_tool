@@ -3,7 +3,9 @@ import {
   computed,
   defineComponent,
   h,
+  nextTick,
   onMounted,
+  onBeforeUnmount,
   shallowRef,
   ref,
   watch,
@@ -17,6 +19,8 @@ import { encodeDragPayload } from '../../interactive/services/dragPayload'
 
 const store = useAppStore()
 const activeTab = ref('component')
+const isDragging = ref(false)
+let drawerOverlayEl = null
 
 const previewMetas = computed(() => [...store.componentList, ...store.layoutList])
 
@@ -25,17 +29,43 @@ function handleClose() {
 }
 
 function startExternalDrag(event, sourceType, item) {
+  console.log('[DrawerPanel] dragstart', { sourceType, sourceName: item.name })
+  isDragging.value = true
   event.dataTransfer.effectAllowed = 'copy'
-  event.dataTransfer.setData('text/plain', encodeDragPayload({
+  const encoded = encodeDragPayload({
     kind: 'palette-item',
     sourceType,
     sourceName: item.name,
-  }))
+  })
+  event.dataTransfer.setData('text/plain', encoded)
+  console.log('[DrawerPanel] dragstart encoded payload:', encoded)
+
+  const onDragEnd = () => {
+    console.log('[DrawerPanel] dragend (全局)')
+    isDragging.value = false
+    store.drawerOpen = false
+    document.removeEventListener('dragend', onDragEnd)
+  }
+  document.addEventListener('dragend', onDragEnd)
 }
+
+// drawer 打开后，找到实际的 Teleport DOM 容器（不再需要 dragleave 逻辑）
+function bindDrawerDragLeave() {}
+
+watch(() => store.drawerOpen, (open) => {
+  if (open) {
+    bindDrawerDragLeave()
+  }
+})
 
 onMounted(async () => {
   await preloadComponentLibraries(previewMetas.value)
+  if (store.drawerOpen) {
+    bindDrawerDragLeave()
+  }
 })
+
+onBeforeUnmount(() => {})
 
 watch(previewMetas, async (value) => {
   await preloadComponentLibraries(value)
@@ -98,6 +128,7 @@ const PanelPreview = defineComponent({
     title="组件与布局面板"
     direction="rtl"
     size="300px"
+    :modal="false"
     :before-close="handleClose"
   >
     <el-tabs v-model="activeTab">

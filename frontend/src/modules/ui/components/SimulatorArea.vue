@@ -1,6 +1,6 @@
 <script setup>
 import { useAppStore } from '../../../stores/app'
-import PhoneFrame from '../../interactive/components/PhoneFrameRuntime.vue'
+import PhoneFrame from '../../interactive/components/PhoneFrame.vue'
 import DrawerPanel from './DrawerPanel.vue'
 
 const store = useAppStore()
