@@ -52,84 +52,102 @@ function onDocDragOver(event) {
   }
 }
 
-// 在 phone-screen 内查找鼠标下方最深的容器节点（用于外部拖入时确定 drop 目标）
-function findContainerAtPoint(x, y) {
-  const allNodes = document.querySelectorAll('.sim-node[data-node-id][data-is-container="true"]')
+// 在 phone-screen 内查找鼠标下方最深的 SimNode 节点（容器或非容器）
+function findDropTarget(x, y) {
+  const allNodes = document.querySelectorAll('.sim-node[data-node-id]')
   let target = null
   let targetArea = Infinity
   for (const el of allNodes) {
     const rect = el.getBoundingClientRect()
     if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
       const area = rect.width * rect.height
-      // 面积最小的 = DOM 树中最深的容器
       if (area < targetArea) {
         targetArea = area
-        target = el.dataset.nodeId
+        target = el
       }
     }
   }
-  return target
+  if (!target) return { nodeId: null, isContainer: false }
+  return {
+    nodeId: target.dataset.nodeId,
+    isContainer: target.dataset.isContainer === 'true',
+  }
 }
 
 // document 级别 drop：坐标落在 phone-screen 内则处理
-// drop 事件中 getData 可以正常读取
 function onDocDrop(event) {
   if (!isOverPhoneScreen(event)) return
   event.preventDefault()
-  const containerId = findContainerAtPoint(event.clientX, event.clientY)
-  console.log('[PhoneFrame] doc drop, containerId:', containerId)
+  const { nodeId: targetId, isContainer } = findDropTarget(event.clientX, event.clientY)
+  console.log('[PhoneFrame] doc drop, target:', targetId, 'isContainer:', isContainer)
   const payload = decodeDragPayload(event.dataTransfer.getData('text/plain'))
-  console.log('[PhoneFrame] doc drop payload:', payload)
-  applyDragPayload(payload, containerId)
+  applyDragPayload(payload, targetId, isContainer)
 }
 
-function applyDragPayload(payload, parentId = null) {
-  console.log('[PhoneFrame] applyDragPayload', { payload, parentId })
+// 统一的拖拽结果处理
+// operation: 'swap' | 'move-into' | 'add-to-container' | 'add-to-root'
+function applyDragPayload(payload, targetNodeId = null, isTargetContainer = false) {
+  console.log('[PhoneFrame] applyDragPayload', { payload, targetNodeId, isTargetContainer })
   if (!payload) {
-    console.warn('[PhoneFrame] applyDragPayload: payload 为空，放弃')
+    console.warn('[PhoneFrame] applyDragPayload: payload 为空')
     return
   }
 
   if (payload.kind === 'existing-node') {
-    console.log('[PhoneFrame] applyDragPayload: 内部移动 nodeId=', payload.nodeId)
-    simStore.moveNode(payload.nodeId, parentId)
+    // 内部拖拽
+    if (!isTargetContainer && targetNodeId) {
+      // 落在非容器节点上 → 交换
+      console.log('[PhoneFrame] swap:', payload.nodeId, '↔', targetNodeId)
+      simStore.swapNodes(payload.nodeId, targetNodeId)
+    } else {
+      // 落在容器上或空白处 → 移入容器
+      console.log('[PhoneFrame] moveNode:', payload.nodeId, '→ container:', targetNodeId)
+      simStore.moveNode(payload.nodeId, targetNodeId)
+    }
     return
   }
 
+  // 外部拖入（palette-item）
   const source = findSource(payload.sourceType, payload.sourceName)
-  console.log('[PhoneFrame] applyDragPayload: 外部新增 source=', source)
-
   if (!source) {
-    console.warn('[PhoneFrame] applyDragPayload: 未找到 source', payload.sourceType, payload.sourceName)
+    console.warn('[PhoneFrame] 未找到 source:', payload.sourceType, payload.sourceName)
     return
   }
 
-  simStore.addNode(parentId, source)
-  console.log('[PhoneFrame] applyDragPayload: addNode 完成, nodeTree=', JSON.parse(JSON.stringify(simStore.nodeTree)))
+  if (isTargetContainer && targetNodeId) {
+    // 落在容器上 → 加入容器
+    simStore.addNode(targetNodeId, source)
+  } else {
+    // 落在空白或非容器上 → 加到根
+    simStore.addNode(null, source)
+  }
+  console.log('[PhoneFrame] addNode 完成, nodeTree:', JSON.parse(JSON.stringify(simStore.nodeTree)))
 }
 
 // phone-screen 上的 dragover/drop 保留给内部 SimNode 拖拽（不经过 overlay）
 function onScreenDragOver(event) {
-  console.log('[PhoneFrame] screen dragover fired', event.target)
   event.preventDefault()
-  const payload = decodeDragPayload(event.dataTransfer.getData('text/plain'))
-  event.dataTransfer.dropEffect = payload?.kind === 'existing-node' ? 'move' : 'copy'
+  event.dataTransfer.dropEffect = event.dataTransfer.effectAllowed === 'move' ? 'move' : 'copy'
 }
 
 function onScreenDrop(event) {
-  console.log('[PhoneFrame] screen drop fired', event.target)
+  console.log('[PhoneFrame] screen drop (空白区域)')
   event.preventDefault()
   const payload = decodeDragPayload(event.dataTransfer.getData('text/plain'))
-  applyDragPayload(payload, null)
+  // 落在 phone-screen 空白处 → 加到根
+  applyDragPayload(payload, null, false)
 }
 
-function handleDropOnNode(payload, parentId) {
-  const dropEvent = payload?.event || payload
-  const targetParentId = payload?.parentId ?? parentId
-  dropEvent.preventDefault()
-  dropEvent.stopPropagation()
-  const dragPayload = decodeDragPayload(dropEvent.dataTransfer.getData('text/plain'))
-  applyDragPayload(dragPayload, targetParentId)
+// 落在容器 SimNode 上 → 移入容器
+function handleDropOnNode(payload) {
+  const { dragPayload, parentId } = payload
+  applyDragPayload(dragPayload, parentId, true)
+}
+
+// 落在非容器 SimNode 上 → 交换
+function handleSwap(payload) {
+  const { dragPayload, targetNodeId } = payload
+  applyDragPayload(dragPayload, targetNodeId, false)
 }
 
 function selectNode(nodeId) {
@@ -169,7 +187,7 @@ const SimNode = defineComponent({
       default: null,
     },
   },
-  emits: ['select', 'delete', 'drop-on'],
+  emits: ['select', 'delete', 'drop-on', 'swap'],
   setup(props, { emit }) {
     const runtimeComponent = shallowRef(null)
 
@@ -224,17 +242,11 @@ const SimNode = defineComponent({
     }
 
     function handleDragOver(event) {
-      console.log('[SimNode] dragover', {
-        nodeId: props.node.id,
-        type: props.node.type,
-        isContainer: isContainer.value,
-      })
       // 所有节点都必须 preventDefault，否则浏览器不会触发 drop 事件
       event.preventDefault()
       if (isContainer.value) {
         event.stopPropagation()
       }
-      // dropEffect 必须匹配 effectAllowed，否则浏览器拒绝 drop
       event.dataTransfer.dropEffect = event.dataTransfer.effectAllowed === 'move' ? 'move' : 'copy'
     }
 
@@ -245,12 +257,18 @@ const SimNode = defineComponent({
         isContainer: isContainer.value,
       })
       event.preventDefault()
+      event.stopPropagation()
+
+      const dragPayload = decodeDragPayload(event.dataTransfer.getData('text/plain'))
+      if (!dragPayload) return
+
       if (isContainer.value) {
-        // 容器节点：直接处理，阻止冒泡
-        event.stopPropagation()
-        emit('drop-on', { event, parentId: props.node.id })
+        // 容器节点：移入
+        emit('drop-on', { dragPayload, parentId: props.node.id })
+      } else {
+        // 非容器节点：交换
+        emit('swap', { dragPayload, targetNodeId: props.node.id })
       }
-      // 非容器节点：不 stopPropagation，让事件冒泡到 phone-screen 处理（重排序）
     }
 
     function handleDragStart(event) {
@@ -278,6 +296,7 @@ const SimNode = defineComponent({
           onSelect: (nodeId) => emit('select', nodeId),
           onDelete: (nodeId) => emit('delete', nodeId),
           onDropOn: (payload) => emit('drop-on', payload),
+          onSwap: (payload) => emit('swap', payload),
         })
       )
 
@@ -345,6 +364,7 @@ const SimNode = defineComponent({
         @select="selectNode"
         @delete="simStore.removeNode($event)"
         @drop-on="handleDropOnNode"
+        @swap="handleSwap"
       />
     </div>
     <div class="phone-home-indicator"></div>

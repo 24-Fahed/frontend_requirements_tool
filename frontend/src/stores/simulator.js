@@ -87,6 +87,49 @@ export const useSimulatorStore = defineStore('simulator', () => {
     }
   }
 
+  // 交换两个节点的位置
+  function swapNodes(nodeIdA, nodeIdB) {
+    if (!nodeIdA || !nodeIdB || nodeIdA === nodeIdB) return false
+
+    const infoA = findParentAndIndex(nodeTree.value, nodeIdA)
+    const infoB = findParentAndIndex(nodeTree.value, nodeIdB)
+    if (!infoA || !infoB) return false
+
+    // 不能和自己交换
+    if (infoA.parent === infoB.parent && infoA.index === infoB.index) return false
+
+    // 同一父节点
+    if (infoA.parent === infoB.parent) {
+      const arr = infoA.parent
+      const temp = arr[infoA.index]
+      arr[infoA.index] = arr[infoB.index]
+      arr[infoB.index] = temp
+      return true
+    }
+
+    // 不同父节点：交换
+    const nodeA = infoA.parent[infoA.index]
+    const nodeB = infoB.parent[infoB.index]
+    infoA.parent[infoA.index] = nodeB
+    infoB.parent[infoB.index] = nodeA
+    return true
+  }
+
+  // 查找节点的父数组及其索引
+  function findParentAndIndex(nodes, id, parentArr = null) {
+    const idx = nodes.findIndex(n => n.id === id)
+    if (idx !== -1) {
+      return { parent: nodes, index: idx }
+    }
+    for (const node of nodes) {
+      if (node.children) {
+        const found = findParentAndIndex(node.children, id, node.children)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
   // 更新节点属性
   function updateNodeProps(nodeId, props) {
     const node = findNode(nodeTree.value, nodeId)
@@ -172,6 +215,7 @@ export const useSimulatorStore = defineStore('simulator', () => {
     addNode,
     removeNode,
     moveNode,
+    swapNodes,
     updateNodeProps,
     reset,
     getResult,
