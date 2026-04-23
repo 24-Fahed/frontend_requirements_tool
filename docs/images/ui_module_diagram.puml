@@ -12,7 +12,7 @@ skinparam ArrowColor #333333
 skinparam PackageFontSize 14
 skinparam ComponentFontSize 13
 
-title 界面子系统 - 模块图
+title 界面子系统 - 模块图（v0.1.2）
 
 package "界面子系统" as UI_SYS #F3E5F5 {
 
@@ -50,19 +50,9 @@ package "界面子系统" as UI_SYS #F3E5F5 {
     end note
   }
 
-  package "抽屉面板模块" as MOD_DRAWER #E1BEE7 {
-    component [DrawerPanel] as DRAWER
-    component [ComponentDrawer] as COMP_DRAWER
-    component [LayoutDrawer] as LAYOUT_DRAWER
-    note left of MOD_DRAWER
-      职责：展示组件和布局列表，
-      支持拖拽到模拟器
-    end note
-  }
-
   package "布局管理模块" as MOD_LAYOUT #E1BEE7 {
     component [LayoutManager] as LAYOUT_MGR
-    note right of MOD_LAYOUT
+    note left of MOD_LAYOUT
       职责：管理三栏布局的
       尺寸、折叠和响应式
     end note
@@ -70,11 +60,12 @@ package "界面子系统" as UI_SYS #F3E5F5 {
 }
 
 MOD_HEADER --> MOD_SIDEBAR : 控制分类
-MOD_HEADER --> MOD_DRAWER : 呼出面板
 MOD_LAYOUT --> MOD_SIDEBAR : 管理左侧栏
 MOD_LAYOUT --> MOD_CONTENT : 管理中间区
 MOD_LAYOUT --> MOD_SIM_AREA : 管理右侧区
 MOD_SIDEBAR --> MOD_CONTENT : 切换内容
-MOD_DRAWER --> MOD_SIM_AREA : 拖拽目标
+
+' ToolBar 通过共享状态仓库控制组件面板的显隐，
+' 组件面板属于交互式需求收集子系统
 
 @enduml

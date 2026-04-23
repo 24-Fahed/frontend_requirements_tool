@@ -7,30 +7,469 @@
         {
           "id": "root",
           "type": "VStack",
-          "props": { "gap": 8, "padding": 8 },
+          "props": { "gap": 0, "padding": 0 },
           "children": [
-            { "id": "banner", "type": "Image", "props": { "src": "banner-placeholder", "width": "100%", "height": 150 } },
-            { "id": "title", "type": "TextBlock", "props": { "content": "欢迎光临", "fontSize": 18 } },
-            { "id": "grid", "type": "HStack", "props": { "gap": 8 }, "children": [
-              { "id": "btn1", "type": "Button", "props": { "text": "功能一", "type": "primary" } },
-              { "id": "btn2", "type": "Button", "props": { "text": "功能二", "type": "default" } }
-            ]}
+            {
+              "id": "header",
+              "type": "MiniProgramHeader",
+              "props": { "logoUrl": "" }
+            },
+            {
+              "id": "logo",
+              "type": "CompanyLogo",
+              "props": { "imageUrl": "" }
+            },
+            {
+              "id": "navbar",
+              "type": "LocationNavBar",
+              "props": { "items": "主页,产品中心,商业案例,关于我们", "active": 0 }
+            },
+            {
+              "id": "video",
+              "type": "VideoPlayer",
+              "props": { "videoUrl": "", "posterUrl": "" }
+            },
+            {
+              "id": "service2a",
+              "type": "CompanyServiceCard2",
+              "props": {
+                "title": "烤炉选购",
+                "content": "We Have Reputated Customers World Wide And Have Good Feedback From Our Customers.",
+                "buttonText": "了解更多",
+                "image": ""
+              }
+            },
+            {
+              "id": "service1",
+              "type": "CompanyServiceCard1",
+              "props": {
+                "title": "咨询产品",
+                "subtitle": "We Have Reputed Customers World Wide And Have Good Feedback From Our Customers.",
+                "buttonText": "了解更多",
+                "image": ""
+              }
+            },
+            {
+              "id": "service2b",
+              "type": "CompanyServiceCard2",
+              "props": {
+                "title": "配件购买",
+                "content": "We Have Reputated Customers World Wide And Have Good Feedback From Our Customers.",
+                "buttonText": "了解更多",
+                "image": ""
+              }
+            },
+            {
+              "id": "sep1",
+              "type": "Separator",
+              "props": { "text": "" }
+            },
+            {
+              "id": "product1",
+              "type": "HomeProductCard",
+              "props": {
+                "name": "产品名称",
+                "model": "产品型号",
+                "tags": "定制,专利产品,阿根廷大使馆",
+                "price": "参考价格",
+                "image": ""
+              }
+            },
+            {
+              "id": "product2",
+              "type": "HomeProductCard",
+              "props": {
+                "name": "产品名称",
+                "model": "产品型号",
+                "tags": "定制,专利产品,免费配件",
+                "price": "参考价格",
+                "image": ""
+              }
+            },
+            {
+              "id": "sep2",
+              "type": "Separator",
+              "props": { "text": "" }
+            },
+            {
+              "id": "carousel",
+              "type": "Carousel",
+              "props": { "images": "" }
+            },
+            {
+              "id": "about",
+              "type": "CompanyInfoCard",
+              "props": {
+                "title": "关于公司",
+                "paragraph1": "Guangzhou Ying Pavilion Video Machinery Co., Ltd. is a professional enterprise.",
+                "paragraph2": "We have been committed to providing high-quality products worldwide.",
+                "paragraph3": "Our products are widely used in restaurants, hotels, and catering establishments.",
+                "buttonText": "了解更多",
+                "image": ""
+              }
+            },
+            {
+              "id": "tabbar",
+              "type": "TabBar",
+              "props": { "active": 0 }
+            }
           ]
         }
       ]
     },
     {
-      "id": "product-default",
-      "name": "产品页默认布局",
+      "id": "product-detail",
+      "name": "产品详情页默认布局",
       "nodes": [
         {
           "id": "root",
           "type": "VStack",
-          "props": { "gap": 10, "padding": 10 },
+          "props": { "gap": 0, "padding": 0 },
           "children": [
-            { "id": "product-img", "type": "Image", "props": { "src": "product-placeholder", "width": "100%", "height": 200 } },
-            { "id": "product-card", "type": "ProductCard", "props": { "title": "示例产品", "price": "¥99.00" } },
-            { "id": "buy-btn", "type": "Button", "props": { "text": "立即购买", "type": "primary" } }
+            {
+              "id": "header",
+              "type": "MiniProgramHeader",
+              "props": { "logoUrl": "" }
+            },
+            {
+              "id": "media",
+              "type": "ProductMediaSwipe",
+              "props": {
+                "tabs": "展示视频,产品图集,用户案例",
+                "media": "[]"
+              }
+            },
+            {
+              "id": "info",
+              "type": "ProductDetailInfo",
+              "props": {
+                "name": "产品名称",
+                "model": "产品型号",
+                "tags": "定制,专利产品,销量冠军,阿根廷大使馆",
+                "price": "参考价格",
+                "qrCodeUrl": ""
+              }
+            },
+            {
+              "id": "spec",
+              "type": "ProductSpecTable",
+              "props": {
+                "rows": "[{\"label\":\"产品型号\",\"value\":\"\"},{\"label\":\"尺寸\",\"value\":\"\"},{\"label\":\"材质\",\"value\":\"\"},{\"label\":\"重量\",\"value\":\"\"}]"
+              }
+            },
+            {
+              "id": "drawing",
+              "type": "ProductEngineeringDrawing",
+              "props": { "imageUrl": "" }
+            },
+            {
+              "id": "intro",
+              "type": "ProductIntroduction",
+              "props": {
+                "title": "产品介绍",
+                "content": "产品详细描述..."
+              }
+            },
+            {
+              "id": "sep",
+              "type": "Separator",
+              "props": { "text": "" }
+            },
+            {
+              "id": "rec1",
+              "type": "HomeProductCard",
+              "props": {
+                "name": "配件名称",
+                "model": "产品型号",
+                "tags": "定制,专利产品,阿根廷大使馆",
+                "price": "参考价格",
+                "image": ""
+              }
+            },
+            {
+              "id": "rec2",
+              "type": "HomeProductCard",
+              "props": {
+                "name": "配件名称",
+                "model": "产品型号",
+                "tags": "定制,专利产品,阿根廷大使馆",
+                "price": "参考价格",
+                "image": ""
+              }
+            },
+            {
+              "id": "action",
+              "type": "ProductActionBar",
+              "props": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "user-profile",
+      "name": "个人主页默认布局",
+      "nodes": [
+        {
+          "id": "root",
+          "type": "VStack",
+          "props": { "gap": 0, "padding": 0 },
+          "children": [
+            {
+              "id": "header",
+              "type": "MiniProgramHeader",
+              "props": { "logoUrl": "" }
+            },
+            {
+              "id": "summary",
+              "type": "UserProfileSummary",
+              "props": { "avatarUrl": "", "username": "用户名", "productCount": "您有5款产品" }
+            },
+            {
+              "id": "sep1",
+              "type": "Separator",
+              "props": { "text": "" }
+            },
+            {
+              "id": "menu1",
+              "type": "UserProfileMenuItem",
+              "props": { "icon": "apps-o", "text": "我的产品" }
+            },
+            {
+              "id": "tsep1",
+              "type": "ThinSeparator",
+              "props": {}
+            },
+            {
+              "id": "menu2",
+              "type": "UserProfileMenuItem",
+              "props": { "icon": "like-o", "text": "我的收藏" }
+            },
+            {
+              "id": "tsep2",
+              "type": "ThinSeparator",
+              "props": {}
+            },
+            {
+              "id": "menu3",
+              "type": "UserProfileMenuItem",
+              "props": { "icon": "service-o", "text": "我的客服" }
+            },
+            {
+              "id": "tsep3",
+              "type": "ThinSeparator",
+              "props": {}
+            },
+            {
+              "id": "menu4",
+              "type": "UserProfileMenuItem",
+              "props": { "icon": "location-o", "text": "收货地址" }
+            },
+            {
+              "id": "tsep4",
+              "type": "ThinSeparator",
+              "props": {}
+            },
+            {
+              "id": "menu5",
+              "type": "UserProfileMenuItem",
+              "props": { "icon": "setting-o", "text": "设    置" }
+            },
+            {
+              "id": "tsep5",
+              "type": "ThinSeparator",
+              "props": {}
+            },
+            {
+              "id": "menu6",
+              "type": "UserProfileMenuItem",
+              "props": { "icon": "revoke", "text": "退出登录" }
+            },
+            {
+              "id": "copyright",
+              "type": "CopyrightBar",
+              "props": { "text": "© 2024 广州市银阁视频机械有限公司" }
+            },
+            {
+              "id": "tabbar",
+              "type": "TabBar",
+              "props": { "active": 3 }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "about-company",
+      "name": "关于公司页默认布局",
+      "nodes": [
+        {
+          "id": "root",
+          "type": "VStack",
+          "props": { "gap": 0, "padding": 0 },
+          "children": [
+            {
+              "id": "header",
+              "type": "MiniProgramHeader",
+              "props": { "logoUrl": "" }
+            },
+            {
+              "id": "logo",
+              "type": "CompanyLogo",
+              "props": { "imageUrl": "" }
+            },
+            {
+              "id": "building",
+              "type": "CompanyProductPromo",
+              "props": { "imageUrl": "" }
+            },
+            {
+              "id": "intro",
+              "type": "CompanyIntroSection",
+              "props": {
+                "title": "公司介绍",
+                "content": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+              }
+            },
+            {
+              "id": "tsep1",
+              "type": "ThinSeparator",
+              "props": {}
+            },
+            {
+              "id": "honors",
+              "type": "HStack",
+              "props": { "gap": 8, "padding": 8 },
+              "children": [
+                {
+                  "id": "honor1",
+                  "type": "CompanyHonors",
+                  "props": { "honors": "[{\"number\":\"13\",\"text\":\"To Create A Company\"}]" }
+                },
+                {
+                  "id": "honor2",
+                  "type": "CompanyHonors",
+                  "props": { "honors": "[{\"number\":\"13\",\"text\":\"To Create A Company\"}]" }
+                }
+              ]
+            },
+            {
+              "id": "honors2",
+              "type": "HStack",
+              "props": { "gap": 8, "padding": 8 },
+              "children": [
+                {
+                  "id": "honor3",
+                  "type": "CompanyHonors",
+                  "props": { "honors": "[{\"number\":\"13\",\"text\":\"To Create A Company\"}]" }
+                },
+                {
+                  "id": "honor4",
+                  "type": "CompanyHonors",
+                  "props": { "honors": "[{\"number\":\"13\",\"text\":\"To Create A Company\"}]" }
+                }
+              ]
+            },
+            {
+              "id": "sep1",
+              "type": "Separator",
+              "props": { "text": "" }
+            },
+            {
+              "id": "contact",
+              "type": "CompanyInfoBar1",
+              "props": {
+                "title": "Contact",
+                "phone": "+86-13928889037",
+                "email": "info@peachwoodgrill.com",
+                "address": "No.9 St 8, GangLingFang, ZhangBian Village, Panyu district, Guangzhou city, China"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "order-page",
+      "name": "订单界面默认布局",
+      "nodes": [
+        {
+          "id": "root",
+          "type": "VStack",
+          "props": { "gap": 0, "padding": 0 },
+          "children": [
+            {
+              "id": "header",
+              "type": "MiniProgramHeader",
+              "props": { "logoUrl": "" }
+            },
+            {
+              "id": "page-title",
+              "type": "ProductIntroduction",
+              "props": { "title": "产品订单", "content": "" }
+            },
+            {
+              "id": "status-tabs",
+              "type": "OrderStatusTabs",
+              "props": { "items": "定制中,运输中,售后中,已完成", "active": 0 }
+            },
+            {
+              "id": "tsep1",
+              "type": "ThinSeparator",
+              "props": {}
+            },
+            {
+              "id": "order1",
+              "type": "OrderProductCard",
+              "props": {
+                "name": "产品名称",
+                "model": "产品型号",
+                "price": "成交价格",
+                "date": "成交日期",
+                "status": "产品状态",
+                "image": ""
+              }
+            },
+            {
+              "id": "tsep2",
+              "type": "ThinSeparator",
+              "props": {}
+            },
+            {
+              "id": "order2",
+              "type": "OrderProductCard",
+              "props": {
+                "name": "产品名称",
+                "model": "产品型号",
+                "price": "成交价格",
+                "date": "成交日期",
+                "status": "产品状态",
+                "image": ""
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "customer-service",
+      "name": "客服页默认布局",
+      "nodes": [
+        {
+          "id": "root",
+          "type": "VStack",
+          "props": { "gap": 0, "padding": 0 },
+          "children": [
+            {
+              "id": "header",
+              "type": "MiniProgramHeader",
+              "props": { "logoUrl": "" }
+            },
+            {
+              "id": "placeholder",
+              "type": "PlaceholderPage",
+              "props": { "text": "正在开发" }
+            }
           ]
         }
       ]

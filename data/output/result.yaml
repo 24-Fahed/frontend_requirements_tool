@@ -1,8 +1,8 @@
 project:
-  id: vant-shop
-  name: 商城小程序需求收集
-  description: 基于Vant组件的商城小程序需求调研
-submittedAt: '2026-04-14T09:01:11.162818+00:00'
+  id: miniprogram-style
+  name: 小程序风格需求收集
+  description: 基于暗色工业风格的微信小程序UI组件配置
+submittedAt: '2026-04-18T23:58:37.712069+00:00'
 answers:
 - categoryId: basic
   questionId: q2

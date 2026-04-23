@@ -17,7 +17,7 @@ export const useAppStore = defineStore('app', () => {
   const activeCategoryId = ref(null)
   const sidebarCollapsed = ref(false)
   const simulatorVisible = ref(true)
-  const drawerOpen = ref(false)
+  const panelOpen = ref(false)
 
   // 回答数据
   const answers = ref({})
@@ -91,7 +91,7 @@ export const useAppStore = defineStore('app', () => {
     activeCategoryId,
     sidebarCollapsed,
     simulatorVisible,
-    drawerOpen,
+    panelOpen,
     answers,
     loadRequirements,
     loadComponents,

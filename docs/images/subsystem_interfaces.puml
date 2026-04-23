@@ -13,13 +13,13 @@ skinparam ArrowColor #333333
 skinparam PackageFontSize 14
 skinparam ComponentFontSize 12
 
-title 需求收集工具 - 子系统接口图
+title 需求收集工具 - 子系统接口图（v0.1.2）
 
 ' === 界面子系统 ===
 package "界面子系统" as UI_SYS #F3E5F5 {
   interface "I_Navigation" as I_NAV {
     switchCategory(categoryId: string): void
-    toggleDrawer(): void
+    togglePanel(): void
   }
   interface "I_Layout" as I_LAYOUT {
     setSimulatorVisible(visible: boolean): void

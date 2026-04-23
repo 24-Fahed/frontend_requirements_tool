@@ -42,34 +42,6 @@ categories:
         interactiveConfig:
           defaultLayout: "product-detail"
         note: "拖动组件到模拟器中设计"
-      - id: "q3c"
-        text: "请设计个人主页布局"
-        purpose: "设计个人主页页面结构"
-        type: interactive
-        interactiveConfig:
-          defaultLayout: "user-profile"
-        note: "拖动组件到模拟器中设计"
-      - id: "q3d"
-        text: "请设计关于公司页布局"
-        purpose: "设计关于公司页面结构"
-        type: interactive
-        interactiveConfig:
-          defaultLayout: "about-company"
-        note: "拖动组件到模拟器中设计"
-      - id: "q3e"
-        text: "请设计订单界面布局"
-        purpose: "设计订单界面结构"
-        type: interactive
-        interactiveConfig:
-          defaultLayout: "order-page"
-        note: "拖动组件到模拟器中设计"
-      - id: "q3f"
-        text: "请设计客服页布局"
-        purpose: "设计客服页面结构"
-        type: interactive
-        interactiveConfig:
-          defaultLayout: "customer-service"
-        note: "拖动组件到模拟器中设计"
 
   - id: "components"
     name: "组件配置"

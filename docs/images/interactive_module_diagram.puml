@@ -12,43 +12,42 @@ skinparam ArrowColor #333333
 skinparam PackageFontSize 14
 skinparam ComponentFontSize 13
 
-title 交互式需求收集子系统 - 模块图
+title 交互式需求收集子系统 - 模块图（v0.1.2）
 
 package "交互式需求收集子系统" as INT_SYS #FFF3E0 {
 
   package "模拟器模块" as MOD_SIM #FFE0B2 {
     component [PhoneFrame] as PHONE_FRAME
-    component [SimulatorRenderer] as RENDERER
+    component [SimNode] as SIM_NODE
     note left of MOD_SIM
       职责：手机外壳渲染
-      和内部组件动态渲染
+      和内部组件递归渲染
     end note
   }
 
-  package "拖拽控制模块" as MOD_DRAG #FFE0B2 {
-    component [DragDropController] as DRAG_CTRL
-    component [DropZoneManager] as DROP_ZONE
-    note right of MOD_DRAG
-      职责：管理从抽屉到模拟器
-      的拖拽操作和内部排序
+  package "组件面板模块" as MOD_PANEL #FFE0B2 {
+    component [ComponentPanel] as COMP_PANEL
+    component [PanelPreview] as PANEL_PREVIEW
+    note right of MOD_PANEL
+      职责：展示组件和布局列表，
+      vuedraggable pull:clone
+      拖入模拟器容器
     end note
   }
 
   package "组件管理模块" as MOD_COMP #FFE0B2 {
-    component [ComponentRegistry] as COMP_REG
     component [ComponentLoader] as COMP_LOADER
     note left of MOD_COMP
-      职责：加载和注册开发者
-      提供的组件描述及组件库
+      职责：动态加载开发者
+      提供的组件库文件
     end note
   }
 
   package "布局管理模块" as MOD_LAYOUT #FFE0B2 {
-    component [LayoutRegistry] as LAYOUT_REG
     component [LayoutResolver] as LAYOUT_RESOLVER
     note right of MOD_LAYOUT
-      职责：加载布局定义，
-      解析布局节点树
+      职责：解析默认布局
+      方案到节点树
     end note
   }
 
@@ -62,9 +61,10 @@ package "交互式需求收集子系统" as INT_SYS #FFF3E0 {
 }
 
 ' 模块间关系
-MOD_COMP --> MOD_SIM : 提供组件定义
-MOD_LAYOUT --> MOD_SIM : 提供布局定义
-MOD_DRAG --> MOD_SIM : 控制添加/移动/删除
+MOD_COMP --> MOD_SIM : 提供运行时组件
+MOD_COMP --> MOD_PANEL : 提供预览组件
+MOD_PANEL --> MOD_SIM : vuedraggable clone 拖入
+MOD_LAYOUT --> MOD_SIM : 提供默认布局方案
 MOD_SER --> MOD_SIM : 读取编辑状态
 
 @enduml

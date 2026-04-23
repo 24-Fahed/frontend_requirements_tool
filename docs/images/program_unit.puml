@@ -12,7 +12,7 @@ skinparam ArrowColor #333333
 skinparam PackageFontSize 14
 skinparam ComponentFontSize 12
 
-title 需求收集工具 - 程序单元图
+title 需求收集工具 - 程序单元图（v0.1.2）
 
 ' === 前端应用 ===
 package "前端应用\n（可独立部署的Web应用）" as PU_FE #E8F4FD {
@@ -22,12 +22,11 @@ package "前端应用\n（可独立部署的Web应用）" as PU_FE #E8F4FD {
     component "侧边栏" as M_SIDEBAR
     component "内容展示区" as M_CONTENT
     component "手机模拟器区域" as M_SIM_AREA
-    component "抽屉面板" as M_DRAWER
   }
 
   package "交互式需求收集子系统" as PU_INT #FFF3E0 {
     component "模拟器渲染引擎" as M_RENDERER
-    component "拖拽控制器" as M_DRAG
+    component "组件面板" as M_PANEL
     component "组件管理器" as M_COMP
     component "布局管理器" as M_LAYOUT
     component "编辑结果序列化器" as M_SERIAL

@@ -210,6 +210,7 @@ export const useSimulatorStore = defineStore('simulator', () => {
     nodeTree,
     currentQuestionId,
     selectedNodeId,
+    generateId,
     loadDefault,
     openForQuestion,
     addNode,

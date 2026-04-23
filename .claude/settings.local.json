@@ -9,7 +9,9 @@
       "Bash(timeout 5 python:*)",
       "Bash(npx vite:*)",
       "Bash(docker:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebSearch",
+      "mcp__web-search-prime__web_search_prime"
     ]
   }
 }

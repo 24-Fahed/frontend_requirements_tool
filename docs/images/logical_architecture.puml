@@ -14,7 +14,7 @@ skinparam PackageBorderColor #2C3E50
 skinparam PackageFontSize 14
 skinparam ComponentFontSize 13
 
-title 需求收集工具 - 逻辑架构图
+title 需求收集工具 - 逻辑架构图（v0.1.2）
 
 package "前端 (Vue 3)" as FE #E8F4FD {
 
@@ -23,25 +23,23 @@ package "前端 (Vue 3)" as FE #E8F4FD {
     component [侧边栏] as SIDEBAR
     component [内容展示区] as CONTENT
     component [手机模拟器区域] as SIMULATOR
-    component [抽屉面板] as DRAWER
 
     HEADER ..> SIDEBAR : 切换分类
-    HEADER ..> DRAWER : 呼出
     SIDEBAR ..> CONTENT : 切换内容
     CONTENT ..> SIMULATOR : 触发交互式收集
   }
 
   package "交互式需求收集子系统" as INT_SUB #FFF3E0 {
     component [模拟器渲染引擎] as RENDERER
-    component [拖拽控制器] as DRAG_CTRL
+    component [组件面板] as PANEL
     component [组件管理器] as COMP_MGR
     component [布局管理器] as LAYOUT_MGR
     component [编辑结果序列化器] as SERIALIZER
 
     RENDERER ..> COMP_MGR : 加载组件
     RENDERER ..> LAYOUT_MGR : 加载布局
-    DRAG_CTRL ..> RENDERER : 添加/删除/移动
     RENDERER ..> SERIALIZER : 输出结果
+    PANEL ..> COMP_MGR : 预览组件
   }
 
   package "需求收集子系统（前端）" as REQ_SUB_FE #E8F5E9 {
@@ -52,12 +50,14 @@ package "前端 (Vue 3)" as FE #E8F4FD {
   }
 
   SIMULATOR --> RENDERER : 嵌入
-  DRAWER --> DRAG_CTRL : 拖拽源
+  HEADER ..> PANEL : 通过共享状态呼出
   TABLE_RENDER --> ANSWER_COLL : 收集回答
   ANSWER_COLL ..> SERIALIZER : 获取交互式结果
   ANSWER_COLL --> EXPORTER : 传递结果
   CFG_LOADER --> TABLE_RENDER : 提供数据
 }
+
+' PANEL 和 RENDERER 中容器 SimNode 通过 vuedraggable group="sim" 共享拖拽
 
 package "后端 (Python FastAPI)" as BE #FFF9C4 {
 
@@ -106,7 +106,8 @@ end note
 
 note right of INT_SUB
   交互式需求收集子系统
-  负责模拟器渲染和拖拽交互
+  负责模拟器渲染、
+  组件面板和拖拽排序
 end note
 
 note right of REQ_SUB_FE

@@ -55,7 +55,7 @@ rectangle "需求收集工具" as ROOT #E8F4FD {
     rectangle "中间内容展示区" as F3_2 #E1BEE7
     rectangle "手机模拟器区域" as F3_3 #E1BEE7
     rectangle "顶部工具栏" as F3_4 #E1BEE7
-    rectangle "组件/布局抽屉面板" as F3_5 #E1BEE7
+    rectangle "组件/布局面板" as F3_5 #E1BEE7
 
     F3_4 -- F3_1
     F3_4 -- F3_5
@@ -83,7 +83,7 @@ end note
 note right of G3
   三栏布局：侧边栏+内容区+模拟器
   顶部工具栏提供全局操作
-  抽屉面板提供组件/布局选择
+  组件面板提供组件/布局选择
 end note
 
 @enduml

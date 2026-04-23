@@ -12,7 +12,7 @@ skinparam ClassFontSize 12
 skinparam ClassAttributeFontSize 11
 skinparam ClassMethodFontSize 11
 
-title 交互式需求收集子系统 - 构件图（类图）
+title 交互式需求收集子系统 - 构件图（类图）（v0.1.2）
 
 ' === 模拟器模块 ===
 package "模拟器模块" as MOD_SIM #FFE0B2 {
@@ -24,54 +24,51 @@ package "模拟器模块" as MOD_SIM #FFE0B2 {
     + render(): VNode
   }
 
-  class SimulatorRenderer {
-    - nodeTree: LayoutNode[]
-    - componentMap: Map<string, Component>
-    + setNodeTree(nodes: LayoutNode[]): void
-    + addNode(parentId: string, node: LayoutNode): void
-    + removeNode(nodeId: string): void
-    + moveNode(nodeId: string, targetParentId: string, index: number): void
-    + updateNodeProps(nodeId: string, props: object): void
-    + getNodeTree(): LayoutNode[]
+  class SimNode {
+    - node: LayoutNode
+    - metaMap: Map<string, ComponentInfo>
+    - selectedNodeId: string
+    - runtimeComponent: Component
+    + meta: ComponentInfo {computed}
+    + isContainer: boolean {computed}
+    + normalizedProps: object {computed}
     + render(): VNode
   }
 }
 
-' === 拖拽控制模块 ===
-package "拖拽控制模块" as MOD_DRAG #FFE0B2 {
+' === 组件面板模块 ===
+package "组件面板模块" as MOD_PANEL #FFE0B2 {
 
-  class DragDropController {
-    - sourceType: "component" | "layout"
-    - sourceData: object
-    + startDrag(type: string, data: object): void
-    + endDrag(): void
-    + onDrop(targetId: string, index: number): void
+  class ComponentPanel {
+    - open: boolean
+    - activeTab: "component" | "layout"
+    + toggle(): void
+    + setActiveTab(tab: string): void
+    + close(): void
+    + metaToNode(meta: ComponentInfo): LayoutNode
+    + render(): VNode
   }
 
-  class DropZoneManager {
-    - zones: Map<string, DropZone>
-    + registerZone(containerId: string, maxChildren: number): void
-    + unregisterZone(containerId: string): void
-    + isValidDrop(targetId: string): boolean
-    + getDropIndex(event: DragEvent): number
+  class PanelPreview {
+    - meta: ComponentInfo
+    - runtimeComponent: Component
+    + previewProps: object {computed}
+    + loadPreviewComponent(): Promise
+    + render(): VNode
   }
 }
 
 ' === 组件管理模块 ===
 package "组件管理模块" as MOD_COMP #FFE0B2 {
 
-  class ComponentRegistry {
-    - components: Map<string, ComponentInfo>
-    + registerAll(config: ComponentConfig): void
-    + get(name: string): ComponentInfo
-    + getAll(): ComponentInfo[]
-    + getByCategory(category: string): ComponentInfo[]
-  }
-
   class ComponentLoader {
     - loadedLibs: Map<string, object>
-    + loadLibrary(sourceFile: string): Promise<object>
-    + resolveComponent(componentTag: string): Component
+    - runtimeComponentCache: Map<string, Component>
+    + preloadLibraries(metas: ComponentInfo[]): Promise
+    + resolve(meta: ComponentInfo): Promise<Component>
+    - loadScriptLibrary(sourceFile: string): Promise<object>
+    - createContainerComponent(tag: string): Component
+    - injectStyle(styleId: string, cssText: string): void
   }
 
   class ComponentInfo {
@@ -83,6 +80,8 @@ package "组件管理模块" as MOD_COMP #FFE0B2 {
     + defaultProps: object
     + sourceFile: string
     + componentTag: string
+    + isContainer: boolean
+    + maxChildren: number
   }
 
   class PropDef {
@@ -97,31 +96,10 @@ package "组件管理模块" as MOD_COMP #FFE0B2 {
 ' === 布局管理模块 ===
 package "布局管理模块" as MOD_LAYOUT #FFE0B2 {
 
-  class LayoutRegistry {
-    - layouts: Map<string, LayoutInfo>
-    + registerAll(config: LayoutConfig): void
-    + get(name: string): LayoutInfo
-    + getAll(): LayoutInfo[]
-    + getByCategory(category: string): LayoutInfo[]
-  }
-
   class LayoutResolver {
     + resolve(defaultLayoutId: string): LayoutNode[]
     + createNode(type: string, props: object): LayoutNode
     + cloneTree(nodes: LayoutNode[]): LayoutNode[]
-  }
-
-  class LayoutInfo {
-    + name: string
-    + label: string
-    + category: string
-    + icon: string
-    + props: PropDef[]
-    + defaultProps: object
-    + isContainer: boolean
-    + maxChildren: number
-    + sourceFile: string
-    + componentTag: string
   }
 }
 
@@ -143,17 +121,26 @@ class LayoutNode {
 }
 
 ' === 关系 ===
-PhoneFrame *-- SimulatorRenderer : 包含
-SimulatorRenderer o-- LayoutNode : 渲染
-SimulatorRenderer --> ComponentLoader : 加载组件
-DragDropController --> DropZoneManager : 校验放置
-DragDropController --> SimulatorRenderer : 添加/移动/删除节点
-ComponentRegistry *-- ComponentInfo : 包含
+PhoneFrame *-- SimNode : 渲染根节点
+SimNode o-- LayoutNode : 递归渲染
+SimNode --> ComponentLoader : 解析运行时组件
+ComponentPanel *-- PanelPreview : 渲染预览
+PanelPreview --> ComponentLoader : 解析预览组件
 ComponentInfo *-- PropDef : 包含
-ComponentRegistry --> ComponentLoader : 使用
-LayoutRegistry *-- LayoutInfo : 包含
-LayoutInfo --|> ComponentInfo : 继承属性结构
-LayoutRegistry --> LayoutResolver : 使用
 ResultSerializer --> LayoutNode : 序列化
+
+note right of SimNode
+  容器节点的子节点排序
+  由 vuedraggable 处理，
+  SimNode 只负责渲染
+end note
+
+note right of ComponentPanel
+  vuedraggable pull: clone, group: sim
+  拖出时 metaToNode() 将
+  ComponentInfo 转为 LayoutNode
+  直接插入 SimNode 容器的
+  node.children 响应式数组
+end note
 
 @enduml
