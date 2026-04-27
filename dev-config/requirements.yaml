@@ -70,6 +70,13 @@ categories:
         interactiveConfig:
           defaultLayout: "customer-service"
         note: "拖动组件到模拟器中设计"
+      - id: "q3g"
+        text: "v0.1.3 组件加载测试"
+        purpose: "验证 .vue SFC 组件加载改造是否成功"
+        type: interactive
+        interactiveConfig:
+          defaultLayout: "test-sfc-loading"
+        note: "测试 LocationNavBar（Vant Tabs）和 ProductInfoCard（多 Vant 组件）是否正常渲染"
 
   - id: "components"
     name: "组件配置"

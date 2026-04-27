@@ -30,8 +30,13 @@ watch(allMetas, async (value) => {
 </script>
 
 <template>
-  <div class="phone-frame">
-    <div class="phone-status-bar">Simulator</div>
+  <div class="phone-frame" :class="{ 'phone-frame--preview': simStore.previewMode }">
+    <div class="phone-status-bar">
+      <span>Simulator</span>
+      <button class="preview-toggle" @click="simStore.togglePreview">
+        {{ simStore.previewMode ? '编辑' : '预览' }}
+      </button>
+    </div>
     <div class="phone-screen">
       <template v-if="simStore.nodeTree.length === 0">
         <div class="phone-empty-state">

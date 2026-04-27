@@ -12,6 +12,14 @@ export const useSimulatorStore = defineStore('simulator', () => {
   // 选中的节点ID
   const selectedNodeId = ref(null)
 
+  // 预览模式
+  const previewMode = ref(false)
+
+  function togglePreview() {
+    previewMode.value = !previewMode.value
+    selectedNodeId.value = null
+  }
+
   // 节点ID计数器
   let idCounter = 0
   function generateId() {
@@ -210,7 +218,9 @@ export const useSimulatorStore = defineStore('simulator', () => {
     nodeTree,
     currentQuestionId,
     selectedNodeId,
+    previewMode,
     generateId,
+    togglePreview,
     loadDefault,
     openForQuestion,
     addNode,

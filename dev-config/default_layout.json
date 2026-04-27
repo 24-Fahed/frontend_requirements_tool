@@ -473,6 +473,34 @@
           ]
         }
       ]
+    },
+    {
+      "id": "test-sfc-loading",
+      "name": "v0.1.3 SFC加载测试",
+      "nodes": [
+        {
+          "id": "root",
+          "type": "VStack",
+          "props": { "gap": 8, "padding": 0 },
+          "children": [
+            {
+              "id": "navbar",
+              "type": "LocationNavBar",
+              "props": { "items": "主页,产品中心,商业案例,关于我们", "active": 0 }
+            },
+            {
+              "id": "info-card",
+              "type": "ProductInfoCard",
+              "props": {
+                "title": "YGCOMBI-Lat",
+                "buttonText": "Contact Us",
+                "phones": "+86-13928889037,13928889037",
+                "qrCodeUrl": ""
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

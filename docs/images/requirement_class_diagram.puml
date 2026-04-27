@@ -18,69 +18,50 @@ title 需求收集子系统 - 构件图（类图）
 
 package "需求收集子系统（前端）" as REQ_FE #E8F5E9 {
 
-  ' 配置加载模块
-  package "配置加载模块" as MOD_LOAD #C8E6C9 {
-
-    class ConfigLoader {
-      - apiClient: ApiClient
-      - cache: Map<string, any>
-      + loadRequirements(categoryId?: string): Promise<RequirementData>
-      + loadComponents(): Promise<ComponentConfig>
-      + loadDefaultLayout(layoutId: string): Promise<LayoutData>
-      + clearCache(): void
-    }
-  }
-
   ' 表格渲染模块
   package "表格渲染模块" as MOD_TABLE #C8E6C9 {
 
     class TableRenderer {
-      - currentCategory: Category | null
-      - questions: Question[]
-      + setCategory(category: Category): void
+      + category: Category {prop}
+      - appStore: useAppStore
+      - simStore: useSimulatorStore
       + render(): VNode
-      + refresh(): void
     }
 
     class QuestionRow {
-      + question: Question
-      + answer: Answer | null
-      + renderInput(): VNode
-      + onTextChange(text: string): void
-      + onOptionSelect(options: string[]): void
-      + onInteractiveTrigger(): void
+      + question: Object {prop}
+      + categoryId: string {prop}
+      - appStore: useAppStore
+      - simStore: useSimulatorStore
+      + currentAnswer: Answer | null {computed}
+      + handleTextChange(): void
+      + handleOptionSelect(): void
+      + handleCustomInput(): void
+      + handleInteractive(): void
+      + saveInteractiveResult(): void
     }
   }
 
-  ' 回答收集模块
-  package "回答收集模块" as MOD_ANSWER #C8E6C9 {
+  ' 应用状态仓库（承载配置加载、回答收集、结果导出）
+  package "应用状态仓库" as MOD_APP #C8E6C9 {
 
-    class AnswerCollector {
-      - answers: Map<string, Answer>
-      + collect(questionId: string, answer: Answer): void
-      + get(questionId: string): Answer | null
-      + getAll(): Answer[]
-      + remove(questionId: string): void
-      + clear(): void
-    }
-
-    class InteractiveBridge {
-      - simulator: I_Simulator
-      - currentQuestionId: string | null
-      + openSimulator(questionId: string, defaultLayoutId?: string): void
-      + saveSimulatorResult(): LayoutData
-      + closeSimulator(): void
-    }
-  }
-
-  ' 结果导出模块
-  package "结果导出模块" as MOD_EXPORT #C8E6C9 {
-
-    class ResultExporter {
-      - apiClient: ApiClient
-      + exportAsJson(answers: Answer[]): object
-      + exportAsYaml(answers: Answer[]): string
-      + submit(answers: Answer[]): Promise<Result>
+    class useAppStore {
+      + requirementData: any
+      + categories: Category[] {computed}
+      + projectInfo: object {computed}
+      + componentList: ComponentInfo[]
+      + layoutList: ComponentInfo[]
+      + defaultLayouts: any[]
+      + activeCategoryId: string
+      + answers: object
+      + loadRequirements(): Promise<void>
+      + loadComponents(): Promise<void>
+      + loadDefaultLayouts(): Promise<void>
+      + setCategory(categoryId: string): void
+      + setAnswer(questionId: string, answer: Answer): void
+      + getAnswer(questionId: string): Answer | null
+      + submitResults(): Promise<void>
+      + loadResults(): Promise<void>
     }
   }
 }
@@ -110,22 +91,26 @@ package "需求收集子系统（后端）" as REQ_BE #FFF9C4 {
       + purpose: str
       + type: str
       + options: list[str] | None
-      + allow_custom: bool
-      + interactive_config: dict | None
+      + allowCustom: bool
+      + interactiveConfig: InteractiveConfig | None
       + note: str | None
     }
 
+    class InteractiveConfig {
+      + defaultLayout: str | None
+    }
+
     class AnswerModel {
-      + category_id: str
-      + question_id: str
+      + categoryId: str
+      + questionId: str
       + type: str
       + value: Any
-      + custom_value: str | None
+      + customValue: str | None
     }
 
     class ResultModel {
-      + project: ProjectModel
-      + submitted_at: str
+      + project: dict
+      + submittedAt: str
       + answers: list[AnswerModel]
     }
   }
@@ -148,7 +133,10 @@ package "需求收集子系统（后端）" as REQ_BE #FFF9C4 {
   package "需求存储模块" as MOD_STORE #FFFDE7 {
 
     class ResultStorage {
-      + save(result: ResultModel, output_dir: str): void
+      - output_dir: str
+      - yaml_writer: YamlWriter
+      + save(result: ResultModel): void
+      + load(): dict | None
     }
 
     class YamlWriter {
@@ -172,19 +160,16 @@ class Answer {
   + questionId: string
   + categoryId: string
   + type: string
-  + value: string | string[] | LayoutData
-  + customValue: string | null
+  + value: string | string[] | { nodes: LayoutNode[] }
+  + customValue: string | undefined
 }
 
 ' ======= 关系 =======
 ' 前端内部
 TableRenderer *-- QuestionRow : 包含多个
-ConfigLoader ..> TableRenderer : 提供数据
-QuestionRow --> AnswerCollector : 提交回答
-QuestionRow --> InteractiveBridge : 触发交互式
-AnswerCollector *-- Answer : 包含多个
-ResultExporter --> AnswerCollector : 获取全部回答
-InteractiveBridge ..> AnswerCollector : 回写交互式结果
+QuestionRow --> useAppStore : setAnswer / getAnswer
+QuestionRow --> useSimulatorStore : loadDefault / getResult
+useAppStore o-- Answer : 管理回答映射
 
 ' 后端内部
 RequirementDataModel *-- CategoryModel : 包含

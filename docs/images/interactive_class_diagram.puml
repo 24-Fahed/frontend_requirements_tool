@@ -12,26 +12,34 @@ skinparam ClassFontSize 12
 skinparam ClassAttributeFontSize 11
 skinparam ClassMethodFontSize 11
 
-title 交互式需求收集子系统 - 构件图（类图）（v0.1.2）
+title 交互式需求收集子系统 - 构件图（类图）（v0.1.3）
 
 ' === 模拟器模块 ===
 package "模拟器模块" as MOD_SIM #FFE0B2 {
 
   class PhoneFrame {
-    - width: number
-    - height: number
-    - statusBarText: string
+    - simStore: useSimulatorStore
+    - appStore: useAppStore
+    + allMetas: ComponentInfo[] {computed}
+    + metaMap: Map<string, ComponentInfo> {computed}
+    + selectNode(nodeId: string): void
     + render(): VNode
   }
 
   class SimNode {
-    - node: LayoutNode
-    - metaMap: Map<string, ComponentInfo>
-    - selectedNodeId: string
-    - runtimeComponent: Component
+    - node: LayoutNode {prop}
+    - metaMap: Map<string, ComponentInfo> {prop}
+    - selectedNodeId: string {prop}
+    - runtimeComponent: Component {shallowRef}
     + meta: ComponentInfo {computed}
     + isContainer: boolean {computed}
+    + isSelected: boolean {computed}
+    + isBuiltinContainer: boolean {computed}
+    + containerStyle: object {computed}
     + normalizedProps: object {computed}
+    + loadRuntimeComponent(): Promise<void>
+    + emit("select", nodeId: string): void
+    + emit("delete", nodeId: string): void
     + render(): VNode
   }
 }
@@ -40,20 +48,20 @@ package "模拟器模块" as MOD_SIM #FFE0B2 {
 package "组件面板模块" as MOD_PANEL #FFE0B2 {
 
   class ComponentPanel {
-    - open: boolean
-    - activeTab: "component" | "layout"
-    + toggle(): void
-    + setActiveTab(tab: string): void
-    + close(): void
+    - appStore: useAppStore
+    - simStore: useSimulatorStore
+    - activeTab: string
+    + previewMetas: ComponentInfo[] {computed}
     + metaToNode(meta: ComponentInfo): LayoutNode
+    + PanelPreview: defineComponent {内联}
     + render(): VNode
   }
 
   class PanelPreview {
-    - meta: ComponentInfo
-    - runtimeComponent: Component
+    - meta: ComponentInfo {prop}
+    - runtimeComponent: Component {shallowRef}
     + previewProps: object {computed}
-    + loadPreviewComponent(): Promise
+    + loadPreviewComponent(): Promise<void>
     + render(): VNode
   }
 }
@@ -62,13 +70,14 @@ package "组件面板模块" as MOD_PANEL #FFE0B2 {
 package "组件管理模块" as MOD_COMP #FFE0B2 {
 
   class ComponentLoader {
-    - loadedLibs: Map<string, object>
     - runtimeComponentCache: Map<string, Component>
-    + preloadLibraries(metas: ComponentInfo[]): Promise
-    + resolve(meta: ComponentInfo): Promise<Component>
-    - loadScriptLibrary(sourceFile: string): Promise<object>
-    - createContainerComponent(tag: string): Component
-    - injectStyle(styleId: string, cssText: string): void
+    + preloadComponentLibraries(metas: ComponentInfo[]): Promise<void>
+    + resolveRuntimeComponent(meta: ComponentInfo): Promise<Component | null>
+    - createContainerComponent(tag: string): Component | null
+    - normalizeSourcePath(sourceFile: string): string
+    - ensureVantLoaded(): Promise<void>
+    - injectGlobalStyles(): void
+    - createSfcLoaderOptions(): object
   }
 
   class ComponentInfo {
@@ -93,22 +102,23 @@ package "组件管理模块" as MOD_COMP #FFE0B2 {
   }
 }
 
-' === 布局管理模块 ===
-package "布局管理模块" as MOD_LAYOUT #FFE0B2 {
+' === 模拟器状态仓库 ===
+package "模拟器状态仓库" as MOD_STORE #FFE0B2 {
 
-  class LayoutResolver {
-    + resolve(defaultLayoutId: string): LayoutNode[]
-    + createNode(type: string, props: object): LayoutNode
-    + cloneTree(nodes: LayoutNode[]): LayoutNode[]
-  }
-}
-
-' === 结果序列化模块 ===
-package "结果序列化模块" as MOD_SER #FFE0B2 {
-
-  class ResultSerializer {
-    + serialize(nodeTree: LayoutNode[]): object
-    + deserialize(data: object): LayoutNode[]
+  class useSimulatorStore {
+    + nodeTree: LayoutNode[]
+    + currentQuestionId: string
+    + selectedNodeId: string
+    + generateId(): string
+    + loadDefault(layoutId: string): void
+    + openForQuestion(questionId: string, defaultLayoutId?: string): void
+    + addNode(parentId: string, node: object): LayoutNode
+    + removeNode(nodeId: string): void
+    + moveNode(nodeId: string, targetParentId: string, index?: number): void
+    + swapNodes(nodeIdA: string, nodeIdB: string): boolean
+    + updateNodeProps(nodeId: string, props: object): void
+    + reset(): void
+    + getResult(): { nodes: LayoutNode[] }
   }
 }
 
@@ -123,11 +133,11 @@ class LayoutNode {
 ' === 关系 ===
 PhoneFrame *-- SimNode : 渲染根节点
 SimNode o-- LayoutNode : 递归渲染
-SimNode --> ComponentLoader : 解析运行时组件
-ComponentPanel *-- PanelPreview : 渲染预览
-PanelPreview --> ComponentLoader : 解析预览组件
+SimNode --> ComponentLoader : resolveRuntimeComponent
+ComponentPanel *-- PanelPreview : 内联定义
+PanelPreview --> ComponentLoader : resolveRuntimeComponent
 ComponentInfo *-- PropDef : 包含
-ResultSerializer --> LayoutNode : 序列化
+useSimulatorStore o-- LayoutNode : 管理节点树
 
 note right of SimNode
   容器节点的子节点排序

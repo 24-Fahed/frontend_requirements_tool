@@ -1,0 +1,6 @@
+# Data directories (runtime, not versioned)
+data/
+backup/
+
+# Generated output
+output/
