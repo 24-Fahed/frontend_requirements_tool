@@ -1,0 +1,61 @@
+@startuml 交互式需求收集子系统_模块图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ComponentFontName SimHei
+skinparam TitleFontName SimHei
+skinparam ArrowColor #333333
+
+title 交互式需求收集子系统 - 模块图（v0.2.0）
+
+package "交互式需求收集子系统" as INT_SYS #FFF3E0 {
+  package "模拟器宿主模块" as HOST_MOD #FFE0B2 {
+    component [PhoneFrame] as PHONE_FRAME
+  }
+
+  package "模拟器文档应用模块" as DOC_MOD #FFE0B2 {
+    component [SimulatorDocumentApp] as DOC_APP
+    component [SimulatorTopBar] as TOP_BAR
+    component [SimulatorCanvas] as CANVAS
+  }
+
+  package "组件面板模块" as PANEL_MOD #FFE0B2 {
+    component [ComponentPanel] as PANEL
+    component [PanelPreview] as PREVIEW
+  }
+
+  package "节点渲染模块" as NODE_MOD #FFE0B2 {
+    component [SimNode] as SIM_NODE
+  }
+
+  package "组件管理模块" as LOADER_MOD #FFE0B2 {
+    component [ComponentLoader] as LOADER
+    component [SimulatorDocumentStyles] as DOC_STYLES
+  }
+
+  package "状态与序列化模块" as STORE_MOD #FFE0B2 {
+    component [SimulatorStore] as SIM_STORE
+  }
+}
+
+PHONE_FRAME --> DOC_APP : 挂载到 iframe document
+PHONE_FRAME --> DOC_STYLES : 注入基础样式
+DOC_APP --> TOP_BAR
+DOC_APP --> CANVAS
+DOC_APP --> PANEL
+CANVAS --> SIM_NODE : 递归渲染节点树
+PANEL --> PREVIEW : 预览卡片
+SIM_NODE --> LOADER : resolveRuntimeComponent()
+PREVIEW --> LOADER : resolveRuntimeComponent()
+DOC_APP --> LOADER : preloadComponentLibraries()
+DOC_APP --> SIM_STORE : 读取共享状态
+PANEL --> SIM_STORE : 控制 paletteVisible
+TOP_BAR --> SIM_STORE : 控制 previewMode / paletteVisible
+
+note right of PANEL
+  面板与画布位于同一 iframe document。
+  拖拽通过 vuedraggable group="sim" 闭环完成。
+end note
+
+@enduml

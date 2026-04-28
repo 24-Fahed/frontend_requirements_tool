@@ -1,13 +1,15 @@
 <script setup>
 import {
   computed,
+  inject,
   shallowRef,
   watch,
 } from 'vue'
+import draggable from 'vuedraggable'
 import {
+  RUNTIME_CONTEXT_KEY,
   resolveRuntimeComponent,
 } from '../services/componentLoader'
-import draggable from 'vuedraggable'
 
 import SimNode from './SimNode.vue'
 
@@ -29,6 +31,7 @@ const props = defineProps({
 const emit = defineEmits(['select', 'delete'])
 
 const runtimeComponent = shallowRef(null)
+const runtimeContext = inject(RUNTIME_CONTEXT_KEY)
 
 const meta = computed(() => props.metaMap.get(props.node.type) || null)
 const isContainer = computed(() => Array.isArray(props.node.children))
@@ -68,8 +71,13 @@ const normalizedProps = computed(() => {
   return result
 })
 
+/**
+ * Loads the runtime Vue component matching the current node metadata.
+ *
+ * @returns {Promise<void>}
+ */
 async function loadRuntimeComponent() {
-  runtimeComponent.value = await resolveRuntimeComponent(meta.value)
+  runtimeComponent.value = await resolveRuntimeComponent(meta.value, runtimeContext)
 }
 
 const isBuiltinContainer = computed(() => {
@@ -112,7 +120,6 @@ watch(meta, loadRuntimeComponent, { immediate: true })
     <span class="delete-btn" @click.stop="emit('delete', node.id)">&times;</span>
     <span class="node-label">{{ meta?.label || node.type }}</span>
 
-    <!-- 内置容器：draggable 直接作为布局容器，避免额外 wrapper 破坏 grid/flex -->
     <draggable
       v-if="isBuiltinContainer"
       :list="node.children"
@@ -131,7 +138,6 @@ watch(meta, loadRuntimeComponent, { immediate: true })
       </template>
     </draggable>
 
-    <!-- 自定义容器：draggable 放在组件 slot 内 -->
     <component
       v-else-if="runtimeComponent && isContainer"
       :is="runtimeComponent"
@@ -157,14 +163,12 @@ watch(meta, loadRuntimeComponent, { immediate: true })
       </template>
     </component>
 
-    <!-- 非容器节点 -->
     <component
       v-else-if="runtimeComponent"
       :is="runtimeComponent"
       v-bind="normalizedProps"
     />
 
-    <!-- 回退（无运行时组件） -->
     <div v-else class="sim-node-fallback">
       <div class="sim-node-fallback__title">{{ node.type }}</div>
       <div v-if="Object.keys(normalizedProps).length" class="sim-node-fallback__props">

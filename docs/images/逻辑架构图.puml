@@ -1,0 +1,68 @@
+@startuml 逻辑架构图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ComponentFontName SimHei
+skinparam InterfaceFontName SimHei
+skinparam TitleFontName SimHei
+skinparam ArrowColor #333333
+
+title 需求收集工具 - 逻辑架构图（v0.2.0）
+
+package "前端（Vue 3）" as FE #E8F4FD {
+  package "界面子系统" as UI_SUB #F3E5F5 {
+    component [顶部工具栏] as HEADER
+    component [侧边栏] as SIDEBAR
+    component [内容展示区] as CONTENT
+    component [模拟器宿主区] as SIM_HOST
+  }
+
+  package "交互式需求收集子系统" as INT_SUB #FFF3E0 {
+    component [PhoneFrame 宿主] as PHONE_HOST
+    component [SimulatorDocumentApp] as DOC_APP
+    component [组件面板] as PALETTE
+    component [模拟器画布] as CANVAS
+    component [组件加载器] as LOADER
+    component [结果序列化] as SERIALIZER
+  }
+
+  package "需求收集子系统（前端）" as REQ_SUB #E8F5E9 {
+    component [配置加载器] as CFG_LOADER
+    component [表格渲染器] as TABLE_RENDER
+    component [回答收集器] as ANSWER_COLL
+    component [结果导出器] as EXPORTER
+  }
+
+  SIDEBAR --> CONTENT : 切换分类
+  CONTENT --> SIM_HOST : 打开交互式问题
+  SIM_HOST --> PHONE_HOST : 挂载
+  PHONE_HOST --> DOC_APP : 初始化 iframe document
+  DOC_APP --> PALETTE
+  DOC_APP --> CANVAS
+  DOC_APP --> LOADER
+  ANSWER_COLL --> SERIALIZER : 获取交互式结果
+  CFG_LOADER --> TABLE_RENDER : 提供需求数据
+  ANSWER_COLL --> EXPORTER : 提交答案
+}
+
+package "后端（FastAPI）" as BE #FFF9C4 {
+  component [API 路由] as API_ROUTE
+  component [配置解析服务] as PARSER
+  component [结果存储服务] as STORAGE
+  component [静态资源服务] as STATIC
+}
+
+CFG_LOADER --> API_ROUTE : HTTP GET
+EXPORTER --> API_ROUTE : HTTP POST / GET
+API_ROUTE --> PARSER
+API_ROUTE --> STORAGE
+API_ROUTE --> STATIC
+LOADER --> STATIC : GET /static/lib/{path}
+
+note right of INT_SUB
+  组件面板、画布、Vant 运行时与弹层
+  全部位于同一 iframe document 中。
+end note
+
+@enduml

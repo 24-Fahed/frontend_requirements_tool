@@ -27,6 +27,53 @@
       "componentTag": "HStack"
     },
     {
+      "name": "TabBarHeader",
+      "label": "TabBar界面表头",
+      "category": "页面头部",
+      "props": [
+        { "name": "logoText", "type": "string", "default": "PEATH WOOD", "label": "Logo文字" }
+      ],
+      "defaultProps": { "logoText": "PEATH WOOD" },
+      "sourceFile": "lib/TabBarHeader/TabBarHeader.vue",
+      "componentTag": "TabBarHeader"
+    },
+    {
+      "name": "PageHeader",
+      "label": "具体页面标头",
+      "category": "页面头部",
+      "props": [
+        { "name": "title", "type": "string", "default": "产品详情", "label": "页面标题" }
+      ],
+      "defaultProps": { "title": "产品详情" },
+      "sourceFile": "lib/PageHeader/PageHeader.vue",
+      "componentTag": "PageHeader"
+    },
+    {
+      "name": "CategorySelector",
+      "label": "分类选择组件",
+      "category": "导航",
+      "props": [
+        { "name": "title", "type": "string", "default": "产品分类", "label": "标题" },
+        { "name": "categories", "type": "string", "default": "商用大型组合炉,商用大型阿根廷烤炉,普通落地式家用/商用款,台式 无耐火砖", "label": "分类列表(逗号分隔)" },
+        { "name": "expanded", "type": "boolean", "default": true, "label": "是否展开" }
+      ],
+      "defaultProps": { "title": "产品分类", "categories": "商用大型组合炉,商用大型阿根廷烤炉,普通落地式家用/商用款,台式 无耐火砖", "expanded": true },
+      "sourceFile": "lib/CategorySelector/CategorySelector.vue",
+      "componentTag": "CategorySelector"
+    },
+    {
+      "name": "MiniProgramTabBar",
+      "label": "微信小程序界面切换",
+      "category": "导航",
+      "props": [
+        { "name": "active", "type": "number", "default": 0, "label": "激活项索引" },
+        { "name": "items", "type": "string", "default": "首页,产品,我的", "label": "标签项(逗号分隔)" }
+      ],
+      "defaultProps": { "active": 0, "items": "首页,产品,我的" },
+      "sourceFile": "lib/MiniProgramTabBar/MiniProgramTabBar.vue",
+      "componentTag": "MiniProgramTabBar"
+    },
+    {
       "name": "LocationNavBar",
       "label": "位置导航栏",
       "category": "导航",
@@ -42,9 +89,70 @@
       "componentTag": "LocationNavBar"
     },
     {
+      "name": "HomeProductCard",
+      "label": "主页产品展示卡片",
+      "category": "商品卡片",
+      "props": [
+        { "name": "name", "type": "string", "default": "产品名称", "label": "产品名称" },
+        { "name": "model", "type": "string", "default": "产品型号", "label": "产品型号" },
+        { "name": "price", "type": "string", "default": "参考价格", "label": "参考价格" },
+        { "name": "tags", "type": "string", "default": "定制,专利产品,阿根廷大使馆", "label": "标签列表(逗号分隔)" },
+        { "name": "imageUrl", "type": "string", "default": "", "label": "产品图片URL" }
+      ],
+      "defaultProps": { "name": "产品名称", "model": "产品型号", "price": "参考价格", "tags": "定制,专利产品,阿根廷大使馆", "imageUrl": "" },
+      "sourceFile": "lib/HomeProductCard/HomeProductCard.vue",
+      "componentTag": "HomeProductCard"
+    },
+    {
+      "name": "OrderProductCard",
+      "label": "订单产品展示卡片",
+      "category": "商品卡片",
+      "props": [
+        { "name": "name", "type": "string", "default": "产品名称", "label": "产品名称" },
+        { "name": "model", "type": "string", "default": "产品型号", "label": "产品型号" },
+        { "name": "price", "type": "string", "default": "成交价格", "label": "成交价格" },
+        { "name": "date", "type": "string", "default": "成交日期", "label": "成交日期" },
+        { "name": "status", "type": "string", "default": "产品状态", "label": "产品状态" },
+        { "name": "imageUrl", "type": "string", "default": "", "label": "产品图片URL" }
+      ],
+      "defaultProps": { "name": "产品名称", "model": "产品型号", "price": "成交价格", "date": "成交日期", "status": "产品状态", "imageUrl": "" },
+      "sourceFile": "lib/OrderProductCard/OrderProductCard.vue",
+      "componentTag": "OrderProductCard"
+    },
+    {
+      "name": "SimpleProductCard",
+      "label": "产品展示卡片(简略)",
+      "category": "商品卡片",
+      "props": [
+        { "name": "name", "type": "string", "default": "产品名称", "label": "产品名称" },
+        { "name": "model", "type": "string", "default": "产品型号", "label": "产品型号" },
+        { "name": "price", "type": "string", "default": "参考价格", "label": "参考价格" },
+        { "name": "imageUrl", "type": "string", "default": "", "label": "产品图片URL" }
+      ],
+      "defaultProps": { "name": "产品名称", "model": "产品型号", "price": "参考价格", "imageUrl": "" },
+      "sourceFile": "lib/SimpleProductCard/SimpleProductCard.vue",
+      "componentTag": "SimpleProductCard"
+    },
+    {
+      "name": "ProductMediaViewer",
+      "label": "商品详情多媒体组件",
+      "category": "商品展示",
+      "props": [
+        { "name": "videoLabel", "type": "string", "default": "展示视频", "label": "视频标签" },
+        { "name": "galleryLabel", "type": "string", "default": "产品图集", "label": "图集标签" },
+        { "name": "caseLabel", "type": "string", "default": "用户案例", "label": "案例标签" },
+        { "name": "videos", "type": "string", "default": "", "label": "视频URL列表(逗号分隔)" },
+        { "name": "images", "type": "string", "default": "", "label": "图片URL列表(逗号分隔)" },
+        { "name": "cases", "type": "string", "default": "", "label": "案例图片URL列表(逗号分隔)" }
+      ],
+      "defaultProps": { "videoLabel": "展示视频", "galleryLabel": "产品图集", "caseLabel": "用户案例", "videos": "", "images": "", "cases": "" },
+      "sourceFile": "lib/ProductMediaViewer/ProductMediaViewer.vue",
+      "componentTag": "ProductMediaViewer"
+    },
+    {
       "name": "ProductInfoCard",
       "label": "产品信息卡",
-      "category": "联系信息",
+      "category": "商品展示",
       "props": [
         { "name": "title", "type": "string", "default": "YGCOMBI-Lat", "label": "标题" },
         { "name": "buttonText", "type": "string", "default": "Contact Us", "label": "按钮文字" },
@@ -59,6 +167,159 @@
       },
       "sourceFile": "lib/ProductInfoCard/ProductInfoCard.vue",
       "componentTag": "ProductInfoCard"
+    },
+    {
+      "name": "ProductSpecTable",
+      "label": "产品信息点表格",
+      "category": "商品展示",
+      "props": [
+        { "name": "title", "type": "string", "default": "产品信息", "label": "表格标题" },
+        { "name": "rows", "type": "string", "default": "产品型号:,尺寸:,材质:,重量:", "label": "表格行(逗号分隔,每行key:value)" }
+      ],
+      "defaultProps": { "title": "产品信息", "rows": "产品型号:,尺寸:,材质:,重量:" },
+      "sourceFile": "lib/ProductSpecTable/ProductSpecTable.vue",
+      "componentTag": "ProductSpecTable"
+    },
+    {
+      "name": "ProductEngineeringDrawing",
+      "label": "产品工程图",
+      "category": "商品展示",
+      "props": [
+        { "name": "title", "type": "string", "default": "工程图", "label": "标题" },
+        { "name": "imageUrl", "type": "string", "default": "", "label": "工程图URL" }
+      ],
+      "defaultProps": { "title": "工程图", "imageUrl": "" },
+      "sourceFile": "lib/ProductEngineeringDrawing/ProductEngineeringDrawing.vue",
+      "componentTag": "ProductEngineeringDrawing"
+    },
+    {
+      "name": "ProductIntroduction",
+      "label": "产品介绍",
+      "category": "商品展示",
+      "props": [
+        { "name": "heading", "type": "string", "default": "Heading", "label": "标题" },
+        { "name": "content", "type": "string", "default": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", "label": "正文内容" }
+      ],
+      "defaultProps": { "heading": "Heading", "content": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." },
+      "sourceFile": "lib/ProductIntroduction/ProductIntroduction.vue",
+      "componentTag": "ProductIntroduction"
+    },
+    {
+      "name": "ProductActionBar",
+      "label": "产品页用户操作底部栏",
+      "category": "商品操作",
+      "props": [
+        { "name": "consultText", "type": "string", "default": "咨询", "label": "咨询按钮文字" },
+        { "name": "favoriteText", "type": "string", "default": "加入收藏", "label": "收藏按钮文字" },
+        { "name": "buyText", "type": "string", "default": "立即购买", "label": "购买按钮文字" }
+      ],
+      "defaultProps": { "consultText": "咨询", "favoriteText": "加入收藏", "buyText": "立即购买" },
+      "sourceFile": "lib/ProductActionBar/ProductActionBar.vue",
+      "componentTag": "ProductActionBar"
+    },
+    {
+      "name": "CompanyServiceCard1",
+      "label": "公司服务卡片1",
+      "category": "公司信息",
+      "props": [
+        { "name": "title", "type": "string", "default": "咨询产品", "label": "标题" },
+        { "name": "description", "type": "string", "default": "你只要想烤肉，我们就可以推荐你最合适的产品", "label": "描述" },
+        { "name": "buttonText", "type": "string", "default": "Button Text", "label": "按钮文字" },
+        { "name": "imageUrl", "type": "string", "default": "", "label": "图片URL" }
+      ],
+      "defaultProps": { "title": "咨询产品", "description": "你只要想烤肉，我们就可以推荐你最合适的产品", "buttonText": "Button Text", "imageUrl": "" },
+      "sourceFile": "lib/CompanyServiceCard1/CompanyServiceCard1.vue",
+      "componentTag": "CompanyServiceCard1"
+    },
+    {
+      "name": "CompanyServiceCard2",
+      "label": "公司服务卡片2",
+      "category": "公司信息",
+      "props": [
+        { "name": "title", "type": "string", "default": "烤炉选购", "label": "标题" },
+        { "name": "description", "type": "string", "default": "从高级巴西烤炉，到便捷的家用烤炉，我们都有。", "label": "描述" },
+        { "name": "buttonText", "type": "string", "default": "Button Text", "label": "按钮文字" },
+        { "name": "imageUrl", "type": "string", "default": "", "label": "图片URL" }
+      ],
+      "defaultProps": { "title": "烤炉选购", "description": "从高级巴西烤炉，到便捷的家用烤炉，我们都有。", "buttonText": "Button Text", "imageUrl": "" },
+      "sourceFile": "lib/CompanyServiceCard2/CompanyServiceCard2.vue",
+      "componentTag": "CompanyServiceCard2"
+    },
+    {
+      "name": "CompanyHonor",
+      "label": "公司荣誉",
+      "category": "公司信息",
+      "props": [
+        { "name": "honors", "type": "string", "default": "[{\"number\":\"20+\",\"text\":\"年行业经验\"},{\"number\":\"100+\",\"text\":\"全球客户\"},{\"number\":\"50+\",\"text\":\"专利技术\"},{\"number\":\"30+\",\"text\":\"国家覆盖\"}]", "label": "荣誉数据(JSON)" }
+      ],
+      "defaultProps": { "honors": "[{\"number\":\"20+\",\"text\":\"年行业经验\"},{\"number\":\"100+\",\"text\":\"全球客户\"},{\"number\":\"50+\",\"text\":\"专利技术\"},{\"number\":\"30+\",\"text\":\"国家覆盖\"}]" },
+      "sourceFile": "lib/CompanyHonor/CompanyHonor.vue",
+      "componentTag": "CompanyHonor"
+    },
+    {
+      "name": "CompanyInfoBar",
+      "label": "公司信息栏",
+      "category": "公司信息",
+      "props": [
+        { "name": "title", "type": "string", "default": "公司联系信息", "label": "标题" },
+        { "name": "phone", "type": "string", "default": "+86-13928889037", "label": "电话" },
+        { "name": "email", "type": "string", "default": "info@ygcombi.com", "label": "邮箱" },
+        { "name": "address", "type": "string", "default": "广州市白云区...", "label": "地址" }
+      ],
+      "defaultProps": { "title": "公司联系信息", "phone": "+86-13928889037", "email": "info@ygcombi.com", "address": "广州市白云区..." },
+      "sourceFile": "lib/CompanyInfoBar/CompanyInfoBar.vue",
+      "componentTag": "CompanyInfoBar"
+    },
+    {
+      "name": "ServiceUserInfoCard",
+      "label": "客服中心用户信息卡",
+      "category": "用户信息",
+      "props": [
+        { "name": "contactLabel", "type": "string", "default": "联系方式", "label": "联系方式标签" },
+        { "name": "contactValue", "type": "string", "default": "", "label": "联系方式值" },
+        { "name": "nameLabel", "type": "string", "default": "姓名", "label": "姓名标签" },
+        { "name": "nameValue", "type": "string", "default": "", "label": "姓名值" }
+      ],
+      "defaultProps": { "contactLabel": "联系方式", "contactValue": "", "nameLabel": "姓名", "nameValue": "" },
+      "sourceFile": "lib/ServiceUserInfoCard/ServiceUserInfoCard.vue",
+      "componentTag": "ServiceUserInfoCard"
+    },
+    {
+      "name": "MessageInputBox",
+      "label": "邮件正文输入框",
+      "category": "用户信息",
+      "props": [
+        { "name": "placeholder", "type": "string", "default": "请输入内容...", "label": "占位文字" },
+        { "name": "value", "type": "string", "default": "", "label": "默认值" }
+      ],
+      "defaultProps": { "placeholder": "请输入内容...", "value": "" },
+      "sourceFile": "lib/MessageInputBox/MessageInputBox.vue",
+      "componentTag": "MessageInputBox"
+    },
+    {
+      "name": "UserProfileSummary",
+      "label": "个人主页信息摘要",
+      "category": "用户信息",
+      "props": [
+        { "name": "username", "type": "string", "default": "用户名", "label": "用户名" },
+        { "name": "productCount", "type": "string", "default": "您有5款产品", "label": "产品数量提示" }
+      ],
+      "defaultProps": { "username": "用户名", "productCount": "您有5款产品" },
+      "sourceFile": "lib/UserProfileSummary/UserProfileSummary.vue",
+      "componentTag": "UserProfileSummary"
+    },
+    {
+      "name": "UserAddressOverview",
+      "label": "用户地址概览",
+      "category": "用户信息",
+      "props": [
+        { "name": "province", "type": "string", "default": "江苏 省", "label": "省" },
+        { "name": "city", "type": "string", "default": "徐州 市", "label": "市" },
+        { "name": "detail", "type": "string", "default": "铜山区......街道.......号", "label": "详细地址" }
+      ],
+      "defaultProps": { "province": "江苏 省", "city": "徐州 市", "detail": "铜山区......街道.......号" },
+      "sourceFile": "lib/UserAddressOverview/UserAddressOverview.vue",
+      "componentTag": "UserAddressOverview"
     }
   ]
 }

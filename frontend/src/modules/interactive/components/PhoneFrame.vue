@@ -1,59 +1,117 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue'
-import { useSimulatorStore } from '../../../stores/simulator'
-import { useAppStore } from '../../../stores/app'
-import {
-  preloadComponentLibraries,
-} from '../services/componentLoader'
-import SimNode from './SimNode.vue'
+import { createApp } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
+import { pinia } from '../../../stores/pinia'
+import SimulatorDocumentApp from './SimulatorDocumentApp.vue'
+import { createRuntimeContext } from '../services/componentLoader'
+import { simulatorDocumentStyles } from '../services/simulatorDocumentStyles'
 
-const simStore = useSimulatorStore()
-const appStore = useAppStore()
+const frameRef = ref(null)
+let runtimeApp = null
 
-const allMetas = computed(() => [...appStore.componentList, ...appStore.layoutList])
-const metaMap = computed(() => {
-  const entries = allMetas.value.map(item => [item.name, item])
-  return new Map(entries)
-})
+/**
+ * Creates a fresh HTML shell inside the simulator iframe document.
+ *
+ * @param {Document} targetDocument
+ * @returns {void}
+ */
+function initializeFrameDocument(targetDocument) {
+  targetDocument.open()
+  targetDocument.write(`<!DOCTYPE html>
+    <html lang="zh-CN">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simulator Runtime</title>
+      </head>
+      <body>
+        <div id="simulator-root"></div>
+      </body>
+    </html>`)
+  targetDocument.close()
 
-function selectNode(nodeId) {
-  simStore.selectedNodeId = nodeId === simStore.selectedNodeId ? null : nodeId
+  const style = targetDocument.createElement('style')
+  style.dataset.simulatorDocumentStyles = 'true'
+  style.textContent = simulatorDocumentStyles
+  targetDocument.head.appendChild(style)
 }
 
-onMounted(async () => {
-  await preloadComponentLibraries(allMetas.value)
-})
+/**
+ * Unmounts the currently mounted simulator runtime application if it exists.
+ *
+ * @returns {void}
+ */
+function unmountRuntimeApp() {
+  if (!runtimeApp) return
+  runtimeApp.unmount()
+  runtimeApp = null
+}
 
-watch(allMetas, async (value) => {
-  await preloadComponentLibraries(value)
-}, { deep: true })
+/**
+ * Mounts the simulator runtime Vue application into the iframe document.
+ *
+ * @returns {void}
+ */
+function mountRuntimeApp() {
+  const frame = frameRef.value
+  if (!frame?.contentWindow || !frame.contentDocument) return
+
+  unmountRuntimeApp()
+  initializeFrameDocument(frame.contentDocument)
+
+  const runtimeContext = createRuntimeContext(
+    frame.contentWindow,
+    frame.contentDocument,
+    'simulator-frame',
+  )
+
+  runtimeApp = createApp(SimulatorDocumentApp, { runtimeContext })
+  runtimeApp.use(pinia)
+  runtimeApp.mount(frame.contentDocument.getElementById('simulator-root'))
+}
+
+/**
+ * Handles iframe load events and remounts the simulator runtime document.
+ *
+ * @returns {void}
+ */
+function handleFrameLoad() {
+  mountRuntimeApp()
+}
+
+onBeforeUnmount(() => {
+  unmountRuntimeApp()
+})
 </script>
 
 <template>
-  <div class="phone-frame" :class="{ 'phone-frame--preview': simStore.previewMode }">
-    <div class="phone-status-bar">
-      <span>Simulator</span>
-      <button class="preview-toggle" @click="simStore.togglePreview">
-        {{ simStore.previewMode ? '编辑' : '预览' }}
-      </button>
-    </div>
-    <div class="phone-screen">
-      <template v-if="simStore.nodeTree.length === 0">
-        <div class="phone-empty-state">
-          Drag components or layouts here from the right panel
-        </div>
-      </template>
-
-      <SimNode
-        v-for="node in simStore.nodeTree"
-        :key="node.id"
-        :node="node"
-        :meta-map="metaMap"
-        :selected-node-id="simStore.selectedNodeId"
-        @select="selectNode"
-        @delete="simStore.removeNode($event)"
-      />
-    </div>
-    <div class="phone-home-indicator"></div>
+  <div class="phone-frame-host">
+    <iframe
+      ref="frameRef"
+      class="phone-frame-host__iframe"
+      src="about:blank"
+      title="Phone simulator"
+      @load="handleFrameLoad"
+    ></iframe>
   </div>
 </template>
+
+<style scoped>
+.phone-frame-host {
+  width: 375px;
+  height: 667px;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 3px solid #333333;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.phone-frame-host__iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: #ffffff;
+}
+</style>

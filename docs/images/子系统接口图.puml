@@ -1,0 +1,89 @@
+@startuml 子系统接口图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam PackageFontName SimHei
+skinparam InterfaceFontName SimHei
+skinparam TitleFontName SimHei
+skinparam ArrowColor #333333
+
+title 需求收集工具 - 子系统接口图（v0.2.0）
+
+package "界面子系统" as UI_SYS #F3E5F5 {
+  interface "I_Navigation" as I_NAV {
+    switchCategory(categoryId: string): void
+  }
+
+  interface "I_Layout" as I_LAYOUT {
+    setSimulatorVisible(visible: boolean): void
+    setContentData(data: object): void
+  }
+}
+
+package "交互式需求收集子系统" as INT_SYS #FFF3E0 {
+  interface "I_Simulator" as I_SIM {
+    loadDefault(layoutId: string): void
+    openForQuestion(questionId: string, defaultLayoutId?: string): void
+    getResult(): JSON
+    reset(): void
+  }
+
+  interface "I_ComponentRegistry" as I_COMP {
+    loadComponents(): Promise<void>
+    componentList: ComponentInfo[]
+    layoutList: ComponentInfo[]
+  }
+
+  interface "I_LayoutRegistry" as I_LAYOUT_REG {
+    loadDefaultLayouts(): Promise<void>
+    defaultLayouts: LayoutScheme[]
+  }
+}
+
+package "需求收集子系统（前端）" as REQ_FE #E8F5E9 {
+  interface "I_RequirementCollector" as I_REQ {
+    loadRequirements(): Promise<void>
+    setAnswer(questionId: string, answer: any): void
+    getAnswer(questionId: string): Answer | null
+    submitResults(): Promise<void>
+  }
+}
+
+package "需求收集子系统（后端）" as REQ_BE #FFF9C4 {
+  interface "I_ParseService" as I_PARSE {
+    GET /api/requirements
+    GET /api/components
+    GET /api/default-layout
+  }
+
+  interface "I_StorageService" as I_STORAGE {
+    POST /api/results
+    GET /api/results
+  }
+
+  interface "I_StaticService" as I_STATIC {
+    GET /static/lib/{path}
+  }
+}
+
+UI_SYS --> I_NAV
+UI_SYS --> I_LAYOUT
+INT_SYS --> I_SIM
+INT_SYS --> I_COMP
+INT_SYS --> I_LAYOUT_REG
+REQ_FE --> I_REQ
+REQ_BE --> I_PARSE
+REQ_BE --> I_STORAGE
+REQ_BE --> I_STATIC
+
+I_REQ ..> I_SIM : 交互式问题打开 / 保存结果
+I_REQ ..> I_PARSE : 获取配置
+I_REQ ..> I_STORAGE : 保存结果
+I_COMP ..> I_STATIC : 加载组件文件
+
+note bottom of I_NAV
+  v0.2.0 起不再暴露 togglePanel()。
+  组件面板开关迁移到模拟器内部状态栏。
+end note
+
+@enduml

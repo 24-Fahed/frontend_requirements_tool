@@ -4,6 +4,8 @@
 
 风格文件从多个维度描述了前端风格。例如使用那些字体大小，颜色等等。
 
+风格文件在D:\Source\广州市银阁视频机械有限公司\miniprogram\tools\require_tools\design\风格文件 下。
+
 2. 什么是前端设计文件
 
 前端设计文件描述了组件之间的相对位置和摆放方式以及组件的相对大小。具体字号颜色等需要参考风格文件。
@@ -15,6 +17,8 @@
 前端设计文件中的属性：版本号，当前组件的版本号。
 
 其他属性：无用属性。
+
+前端设计文件在D:\Source\广州市银阁视频机械有限公司\miniprogram\tools\require_tools\design\前端设计文件 下。
 
 3. 什么是基础组件
 
@@ -32,6 +36,8 @@
 
 所有的定制组件可以在前端设计文件-组件统计中找到。
 
+定制组件按照vue组件的标准格式编写，参考D:\Source\广州市银阁视频机械有限公司\miniprogram\tools\require_tools\docs\工程师使用手册.md。
+
 5. 前端如何设计
 
 结合上述两种文件，来设计前端。
@@ -44,9 +50,9 @@
 
 前端概览在需求分析工具中被使用，你可以阅读：
 
-D:\Source\广州市银阁视频机械有限公司\miniprogram\tools\require_tools\docs\工程师使用手册.md了解如何编写前端概览。
+D:\Source\广州市银阁视频机械有限公司\miniprogram\tools\require_tools\docs\工程师使用手册.md 了解如何编写前端概览。
 
-参考如何编写D:\Source\广州市银阁视频机械有限公司\miniprogram\tools\require_tools\dev-config中的内容。
+参考如何编写D:\Source\广州市银阁视频机械有限公司\miniprogram\tools\require_tools\dev-config 中的内容。
 
 7. 工作要求
 

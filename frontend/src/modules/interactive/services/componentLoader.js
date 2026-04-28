@@ -2,55 +2,109 @@ import { defineComponent, h } from 'vue'
 import * as Vue from 'vue'
 import { loadModule } from 'vue3-sfc-loader'
 
+/**
+ * Injection key used by simulator document components to access the runtime
+ * context of the iframe document.
+ */
+export const RUNTIME_CONTEXT_KEY = Symbol('runtime-context')
+
 const runtimeComponentCache = new Map()
-
-// ========== Vant 依赖加载 ==========
-
-/** @type {boolean} Vant 依赖是否已就绪 */
-let vantReady = false
+const vantReadyContexts = new Set()
+const globalStylesInjectedContexts = new Set()
+const normalizedPathCache = new Map()
 
 /**
- * 确保 Vant UI 库已加载到全局（window.vant）。
- * 若尚未加载，通过 CDN 注入 Vant CSS 和 JS 并等待完成。
+ * Creates a runtime context describing the target window/document pair where
+ * simulator components should load assets and inject styles.
+ *
+ * @param {Window} targetWindow
+ * @param {Document} targetDocument
+ * @param {string} cacheKey
+ * @returns {{ window: Window, document: Document, cacheKey: string }}
+ */
+export function createRuntimeContext(targetWindow, targetDocument, cacheKey) {
+  targetWindow.Vue = Vue
+
+  return {
+    window: targetWindow,
+    document: targetDocument,
+    cacheKey,
+  }
+}
+
+/**
+ * Ensures the Vant runtime assets are loaded inside the target document
+ * context so `window.vant` resolves against the simulator iframe.
+ *
+ * @param {{ window: Window, document: Document, cacheKey: string }} runtimeContext
  * @returns {Promise<void>}
  */
-async function ensureVantLoaded() {
-  if (vantReady || window.vant) {
-    vantReady = true
+async function ensureVantLoaded(runtimeContext) {
+  if (vantReadyContexts.has(runtimeContext.cacheKey) || runtimeContext.window.vant) {
+    vantReadyContexts.add(runtimeContext.cacheKey)
     return
   }
-  // 加载 Vant CSS
+
+  runtimeContext.window.Vue = Vue
+
   await new Promise((resolve, reject) => {
-    const link = document.createElement('link')
+    const link = runtimeContext.document.createElement('link')
     link.rel = 'stylesheet'
     link.href = 'https://unpkg.com/vant@4/lib/index.css'
     link.onload = resolve
     link.onerror = () => reject(new Error('Failed to load Vant CSS'))
-    document.head.appendChild(link)
+    runtimeContext.document.head.appendChild(link)
   })
-  // 加载 Vant JS
+
   await new Promise((resolve, reject) => {
-    const script = document.createElement('script')
+    const script = runtimeContext.document.createElement('script')
     script.src = 'https://unpkg.com/vant@4/lib/vant.min.js'
     script.onload = resolve
     script.onerror = () => reject(new Error('Failed to load Vant JS'))
-    document.head.appendChild(script)
+    runtimeContext.document.head.appendChild(script)
   })
-  vantReady = true
+
+  if (!runtimeContext.window.vant) {
+    throw new Error('Vant runtime was not attached to the simulator window')
+  }
+
+  vantReadyContexts.add(runtimeContext.cacheKey)
 }
 
-// ========== 全局样式注入 ==========
+/**
+ * Builds the module namespace exposed to SFC `import { X } from 'vant'`
+ * statements. The iframe runtime uses the global UMD bundle, so we expose the
+ * object both as named exports and as a `default` export for compatibility.
+ *
+ * @param {any} vantNamespace
+ * @returns {object}
+ */
+function createVantModule(vantNamespace) {
+  if (!vantNamespace) {
+    return {}
+  }
 
-/** @type {boolean} 全局样式是否已注入 */
-let globalStylesInjected = false
+  if (vantNamespace.default) {
+    return vantNamespace
+  }
+
+  return {
+    ...vantNamespace,
+    default: vantNamespace,
+  }
+}
 
 /**
- * 注入全局样式（Vant 主题变量、CSS reset、Vant 组件覆写）。
- * 仅在首次调用时执行，后续调用直接跳过。
+ * Injects shared Vant theme variables and reset rules into the target runtime
+ * document once per runtime context.
+ *
+ * @param {{ window: Window, document: Document, cacheKey: string }} runtimeContext
+ * @returns {void}
  */
-function injectGlobalStyles() {
-  if (globalStylesInjected) return
-  const style = document.createElement('style')
+function injectGlobalStyles(runtimeContext) {
+  if (globalStylesInjectedContexts.has(runtimeContext.cacheKey)) return
+
+  const style = runtimeContext.document.createElement('style')
   style.dataset.rtGlobalStyles = ''
   style.textContent = `
     :root {
@@ -69,31 +123,40 @@ function injectGlobalStyles() {
       --van-border-radius-max: 0;
     }
     * { -webkit-tap-highlight-color: transparent; }
-    .van-button, .van-popup, .van-cell, .van-card, .van-image, .van-tab, .van-tabbar, .van-tabs, .van-swipe, .van-tag, .van-divider, .van-pagination { box-shadow: none !important; border-radius: 0 !important; font-family: Arial, Helvetica, sans-serif !important; }
+    .van-button, .van-popup, .van-cell, .van-card, .van-image, .van-tab, .van-tabbar, .van-tabs, .van-swipe, .van-tag, .van-divider, .van-pagination, .van-action-bar {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      font-family: Arial, Helvetica, sans-serif !important;
+    }
   `
-  document.head.appendChild(style)
-  globalStylesInjected = true
+  runtimeContext.document.head.appendChild(style)
+  globalStylesInjectedContexts.add(runtimeContext.cacheKey)
 }
 
-// ========== 路径工具 ==========
-
 /**
- * 将相对路径规范化为绝对路径。
- * 若 sourceFile 已以 '/' 开头则原样返回，否则添加 '/static/' 前缀。
- * @param {string} sourceFile - 组件文件路径（相对或绝对）
- * @returns {string} 规范化后的绝对路径
+ * Converts a metadata `sourceFile` path into the static file URL expected by
+ * the runtime loader. Results are memoized because the same paths are
+ * normalized frequently across previews and node rendering.
+ *
+ * @param {string} [sourceFile='']
+ * @returns {string}
  */
 function normalizeSourcePath(sourceFile = '') {
-  return sourceFile.startsWith('/') ? sourceFile : `/static/${sourceFile}`
+  if (normalizedPathCache.has(sourceFile)) {
+    return normalizedPathCache.get(sourceFile)
+  }
+
+  const normalized = sourceFile.startsWith('/') ? sourceFile : `/static/${sourceFile}`
+  normalizedPathCache.set(sourceFile, normalized)
+  return normalized
 }
 
-// ========== 内置容器组件 ==========
-
 /**
- * 创建内置容器组件（VStack / HStack / Grid2Col）。
- * 使用 Vue h() 渲染函数实现 flex/grid 布局，不依赖外部文件。
- * @param {string} tag - 容器标签名
- * @returns {import('vue').Component | null} Vue 组件定义，若 tag 不匹配则返回 null
+ * Creates builtin layout container components that do not require external SFC
+ * files.
+ *
+ * @param {string} tag
+ * @returns {import('vue').Component | null}
  */
 function createContainerComponent(tag) {
   const definitions = {
@@ -145,21 +208,18 @@ function createContainerComponent(tag) {
   })
 }
 
-// ========== vue3-sfc-loader 配置 ==========
-
 /**
- * 创建 vue3-sfc-loader 的配置对象。
- * - moduleCache：将 'vue' 映射到当前 Vue 运行时，'vant' 映射到 window.vant，
- *   使 .vue 文件中的 import 语句无需网络请求即可解析。
- * - getFile：通过 fetch 获取文件内容。
- * - addStyle：将编译后的 CSS 注入 document.head。
- * @returns {object} vue3-sfc-loader 配置
+ * Builds vue3-sfc-loader options for a specific runtime context so compiled
+ * component styles are injected into the target document instead of the host.
+ *
+ * @param {{ window: Window, document: Document, cacheKey: string }} runtimeContext
+ * @returns {object}
  */
-function createSfcLoaderOptions() {
+function createSfcLoaderOptions(runtimeContext) {
   return {
     moduleCache: {
       vue: Vue,
-      vant: window.vant,
+      vant: createVantModule(runtimeContext.window.vant),
     },
     getFile(url) {
       return fetch(url).then(res => {
@@ -168,71 +228,66 @@ function createSfcLoaderOptions() {
       })
     },
     addStyle(textContent) {
-      const style = document.createElement('style')
+      const style = runtimeContext.document.createElement('style')
       style.textContent = textContent
-      document.head.appendChild(style)
+      runtimeContext.document.head.appendChild(style)
     },
   }
 }
 
-// ========== 公开 API ==========
-
 /**
- * 批量预加载组件库。
- * 提取去重的 sourceFile 路径，确保 Vant 依赖和全局样式就绪后，
- * 通过 vue3-sfc-loader 并行编译所有 .vue 文件，结果存入缓存。
- * @param {Array<{sourceFile?: string, componentTag?: string, name?: string}>} componentMetas - 组件元数据列表
+ * Preloads SFC component libraries into a specific runtime context.
+ *
+ * @param {Array<{sourceFile?: string, componentTag?: string, name?: string}>} componentMetas
+ * @param {{ window: Window, document: Document, cacheKey: string }} runtimeContext
  * @returns {Promise<void>}
  */
-export async function preloadComponentLibraries(componentMetas = []) {
-  const sourceFiles = [...new Set(componentMetas.map(m => m?.sourceFile).filter(Boolean))]
+export async function preloadComponentLibraries(componentMetas = [], runtimeContext) {
+  const sourceFiles = [...new Set(componentMetas.map(meta => meta?.sourceFile).filter(Boolean))]
   if (sourceFiles.length === 0) return
 
-  await ensureVantLoaded()
-  injectGlobalStyles()
+  await ensureVantLoaded(runtimeContext)
+  injectGlobalStyles(runtimeContext)
 
-  const options = createSfcLoaderOptions()
+  const options = createSfcLoaderOptions(runtimeContext)
   const promises = sourceFiles.map(async (sourceFile) => {
     const path = normalizeSourcePath(sourceFile)
-    if (runtimeComponentCache.has(path)) return
+    const cacheKey = `${runtimeContext.cacheKey}::${path}`
+    if (runtimeComponentCache.has(cacheKey)) return
 
     const component = await loadModule(path, options)
-    runtimeComponentCache.set(path, component)
+    runtimeComponentCache.set(cacheKey, component)
   })
   await Promise.all(promises)
 }
 
 /**
- * 根据组件元数据解析运行时 Vue 组件实例。
- * 优先返回内置容器组件，其次从缓存取 .vue 编译结果；
- * 若缓存未命中则降级调用 preloadComponentLibraries 单独加载。
- * @param {{sourceFile?: string, componentTag?: string, name?: string} | null} meta - 单个组件元数据
+ * Resolves a runtime component for a specific context, falling back to an
+ * on-demand preload when necessary.
+ *
+ * @param {{sourceFile?: string, componentTag?: string, name?: string} | null} meta
+ * @param {{ window: Window, document: Document, cacheKey: string }} runtimeContext
  * @returns {Promise<import('vue').Component | null>}
  */
-export async function resolveRuntimeComponent(meta) {
+export async function resolveRuntimeComponent(meta, runtimeContext) {
   if (!meta) return null
 
-  // 内置容器组件
   const builtin = createContainerComponent(meta.componentTag || meta.name)
   if (builtin) {
     const builtinKey = `builtin::${meta.componentTag || meta.name}`
     if (!runtimeComponentCache.has(builtinKey)) {
       runtimeComponentCache.set(builtinKey, builtin)
     }
-    return builtin
+    return runtimeComponentCache.get(builtinKey)
   }
 
-  // .vue 文件加载的组件
   if (meta.sourceFile) {
-    const cacheKey = normalizeSourcePath(meta.sourceFile)
-
-    // 从缓存取（preload 阶段已编译）
+    const cacheKey = `${runtimeContext.cacheKey}::${normalizeSourcePath(meta.sourceFile)}`
     if (runtimeComponentCache.has(cacheKey)) {
       return runtimeComponentCache.get(cacheKey)
     }
 
-    // 降级：如果 preload 未加载过，单独加载
-    await preloadComponentLibraries([meta])
+    await preloadComponentLibraries([meta], runtimeContext)
     return runtimeComponentCache.get(cacheKey) || null
   }
 

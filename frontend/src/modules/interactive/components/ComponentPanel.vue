@@ -1,22 +1,25 @@
 <script setup>
-import { computed, defineComponent, h, onMounted, shallowRef, watch } from 'vue'
+import { computed, defineComponent, h, inject, ref, shallowRef, watch } from 'vue'
+import draggable from 'vuedraggable'
 import { useAppStore } from '../../../stores/app'
 import { useSimulatorStore } from '../../../stores/simulator'
 import {
-  preloadComponentLibraries,
+  RUNTIME_CONTEXT_KEY,
   resolveRuntimeComponent,
 } from '../services/componentLoader'
-import draggable from 'vuedraggable'
 
 const appStore = useAppStore()
 const simStore = useSimulatorStore()
+const runtimeContext = inject(RUNTIME_CONTEXT_KEY)
 const activeTab = ref('component')
 
-import { ref } from 'vue'
-
-const previewMetas = computed(() => [...appStore.componentList, ...appStore.layoutList])
-
-// clone 回调：ComponentInfo → LayoutNode
+/**
+ * Clones component metadata into a new simulator layout node for drag
+ * insertion.
+ *
+ * @param {object} meta
+ * @returns {object}
+ */
 function metaToNode(meta) {
   return {
     id: simStore.generateId(),
@@ -25,14 +28,6 @@ function metaToNode(meta) {
     children: meta.isContainer ? [] : undefined,
   }
 }
-
-onMounted(async () => {
-  await preloadComponentLibraries(previewMetas.value)
-})
-
-watch(previewMetas, async (value) => {
-  await preloadComponentLibraries(value)
-}, { deep: true })
 
 const PanelPreview = defineComponent({
   name: 'PanelPreview',
@@ -57,8 +52,13 @@ const PanelPreview = defineComponent({
       return propsValue
     })
 
+    /**
+     * Loads the preview runtime component for the palette card.
+     *
+     * @returns {Promise<void>}
+     */
     async function loadPreviewComponent() {
-      runtimeComponent.value = await resolveRuntimeComponent(props.meta)
+      runtimeComponent.value = await resolveRuntimeComponent(props.meta, runtimeContext)
     }
 
     watch(() => props.meta, loadPreviewComponent, { immediate: true })
@@ -86,10 +86,10 @@ const PanelPreview = defineComponent({
 </script>
 
 <template>
-  <div class="component-panel" :class="{ 'component-panel--open': appStore.panelOpen }">
+  <div class="component-panel" :class="{ 'component-panel--open': simStore.paletteVisible && !simStore.previewMode }">
     <div class="component-panel__header">
-      <span class="component-panel__title">组件与布局面板</span>
-      <span class="component-panel__close" @click="appStore.panelOpen = false">&times;</span>
+      <span class="component-panel__title">Palette</span>
+      <span class="component-panel__close" @click="simStore.togglePalette">&times;</span>
     </div>
 
     <div class="component-panel__tabs">
@@ -98,14 +98,14 @@ const PanelPreview = defineComponent({
         :class="{ 'component-panel__tab--active': activeTab === 'component' }"
         @click="activeTab = 'component'"
       >
-        组件
+        Components
       </button>
       <button
         class="component-panel__tab"
         :class="{ 'component-panel__tab--active': activeTab === 'layout' }"
         @click="activeTab = 'layout'"
       >
-        布局
+        Layouts
       </button>
     </div>
 
@@ -122,7 +122,7 @@ const PanelPreview = defineComponent({
           <div class="drawer-card">
             <PanelPreview :meta="element" />
             <div class="drawer-card__title">{{ element.label }}</div>
-            <div class="drawer-card__meta">{{ element.category }} · {{ element.name }}</div>
+            <div class="drawer-card__meta">{{ element.category }} | {{ element.name }}</div>
           </div>
         </template>
       </draggable>
@@ -139,89 +139,10 @@ const PanelPreview = defineComponent({
           <div class="drawer-card">
             <PanelPreview :meta="element" />
             <div class="drawer-card__title">{{ element.label }}</div>
-            <div class="drawer-card__meta">{{ element.isContainer ? '容器布局' : '布局' }} · {{ element.name }}</div>
+            <div class="drawer-card__meta">{{ element.isContainer ? 'Container' : 'Layout' }} | {{ element.name }}</div>
           </div>
         </template>
       </draggable>
     </div>
   </div>
 </template>
-
-<style scoped>
-.component-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 300px;
-  background: #fff;
-  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.12);
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-}
-
-.component-panel--open {
-  transform: translateX(0);
-}
-
-.component-panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e4e7ed;
-  flex-shrink: 0;
-}
-
-.component-panel__title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.component-panel__close {
-  font-size: 22px;
-  color: #909399;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.component-panel__close:hover {
-  color: #303133;
-}
-
-.component-panel__tabs {
-  display: flex;
-  border-bottom: 1px solid #e4e7ed;
-  flex-shrink: 0;
-}
-
-.component-panel__tab {
-  flex: 1;
-  padding: 10px 0;
-  border: none;
-  background: none;
-  font-size: 14px;
-  color: #606266;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-}
-
-.component-panel__tab--active {
-  color: #409EFF;
-  border-bottom-color: #409EFF;
-}
-
-.component-panel__body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 12px;
-}
-
-.component-panel__list {
-  min-height: 100%;
-}
-</style>

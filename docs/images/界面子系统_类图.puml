@@ -1,0 +1,57 @@
+@startuml 界面子系统_类图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ClassFontName SimHei
+skinparam TitleFontName SimHei
+skinparam ArrowColor #333333
+
+title 界面子系统 - 类图（v0.2.0）
+
+package "界面子系统" #F3E5F5 {
+  class AppHeader {
+    + toggleSidebar(): void
+    + toggleSimulator(): void
+    + handleExport(): Promise<void>
+  }
+
+  class SideBar {
+    + sortedCategories: Category[] {computed}
+    + selectCategory(id: string): void
+  }
+
+  class ContentArea {
+    + activeCategory: Category | null {computed}
+  }
+
+  class SimulatorArea {
+    + render(): VNode
+  }
+
+  class AppStore {
+    + activeCategoryId: string
+    + sidebarCollapsed: boolean
+    + simulatorVisible: boolean
+  }
+}
+
+AppHeader --> AppStore
+SideBar --> AppStore
+ContentArea --> AppStore
+SimulatorArea --> AppStore
+SimulatorArea --> PhoneFrame : 宿主挂载
+
+class PhoneFrame
+
+note right of AppHeader
+  仅负责全局导航与保存结果。
+  不再控制组件面板显隐。
+end note
+
+note right of SimulatorArea
+  只渲染 PhoneFrame 宿主组件。
+  ComponentPanel 已迁移到交互式子系统内部。
+end note
+
+@enduml

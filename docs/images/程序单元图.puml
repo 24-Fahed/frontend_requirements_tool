@@ -1,0 +1,46 @@
+@startuml 程序单元图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ComponentFontName SimHei
+skinparam TitleFontName SimHei
+skinparam ArrowColor #333333
+
+title 程序单元图（v0.2.0）
+
+package "前端程序单元" #E8F4FD {
+  package "界面子系统" #F3E5F5 {
+    component "AppHeader.vue" as U1
+    component "SideBar.vue" as U2
+    component "ContentArea.vue" as U3
+    component "SimulatorArea.vue" as U4
+    component "app.js" as U5
+  }
+
+  package "交互式需求收集子系统" #FFF3E0 {
+    component "PhoneFrame.vue" as I1
+    component "SimulatorDocumentApp.vue" as I2
+    component "SimulatorTopBar.vue" as I3
+    component "ComponentPanel.vue" as I4
+    component "SimNode.vue" as I5
+    component "componentLoader.js" as I6
+    component "simulatorDocumentStyles.js" as I7
+    component "simulator.js" as I8
+  }
+
+  package "需求收集子系统" #E8F5E9 {
+    component "QuestionRow.vue" as R1
+  }
+}
+
+U4 --> I1
+I1 --> I2
+I2 --> I3
+I2 --> I4
+I2 --> I5
+I2 --> I6
+I2 --> I8
+R1 --> I8
+
+@enduml

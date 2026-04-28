@@ -7,10 +7,6 @@ function toggleSidebar() {
   store.sidebarCollapsed = !store.sidebarCollapsed
 }
 
-function togglePanel() {
-  store.panelOpen = !store.panelOpen
-}
-
 function toggleSimulator() {
   store.simulatorVisible = !store.simulatorVisible
 }
@@ -27,9 +23,6 @@ async function handleExport() {
     <div class="toolbar">
       <el-button size="small" type="primary" plain @click="toggleSidebar">
         {{ store.sidebarCollapsed ? '展开侧栏' : '收起侧栏' }}
-      </el-button>
-      <el-button size="small" type="primary" plain @click="togglePanel">
-        {{ store.panelOpen ? '关闭面板' : '组件面板' }}
       </el-button>
       <el-button size="small" type="primary" plain @click="toggleSimulator">
         {{ store.simulatorVisible ? '隐藏模拟器' : '显示模拟器' }}

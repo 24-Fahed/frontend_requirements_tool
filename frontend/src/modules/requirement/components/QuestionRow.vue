@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useAppStore } from '../../../stores/app'
 import { useSimulatorStore } from '../../../stores/simulator'
 
@@ -11,12 +11,17 @@ const props = defineProps({
 const appStore = useAppStore()
 const simStore = useSimulatorStore()
 
-// 当前回答
 const currentAnswer = computed(() => appStore.getAnswer(props.question.id))
 
-// 文字输入
 const textValue = ref(currentAnswer.value?.value || '')
+const selectedOptions = ref(currentAnswer.value?.value || [])
+const customInput = ref(currentAnswer.value?.customValue || '')
 
+/**
+ * Persists text answers into the shared answer store.
+ *
+ * @returns {void}
+ */
 function handleTextChange() {
   appStore.setAnswer(props.question.id, {
     questionId: props.question.id,
@@ -26,10 +31,11 @@ function handleTextChange() {
   })
 }
 
-// 选项选择
-const selectedOptions = ref(currentAnswer.value?.value || [])
-const customInput = ref(currentAnswer.value?.customValue || '')
-
+/**
+ * Persists checkbox answers into the shared answer store.
+ *
+ * @returns {void}
+ */
 function handleOptionSelect() {
   appStore.setAnswer(props.question.id, {
     questionId: props.question.id,
@@ -40,6 +46,11 @@ function handleOptionSelect() {
   })
 }
 
+/**
+ * Persists custom option text for option questions.
+ *
+ * @returns {void}
+ */
 function handleCustomInput() {
   appStore.setAnswer(props.question.id, {
     questionId: props.question.id,
@@ -50,11 +61,20 @@ function handleCustomInput() {
   })
 }
 
-// 交互式收集
+/**
+ * Opens the simulator for the current interactive question and hydrates the
+ * layout tree from either the saved answer or the registered default layout.
+ *
+ * @returns {void}
+ */
 function handleInteractive() {
   const defaultLayoutId = props.question.interactiveConfig?.defaultLayout || null
-  // 如果之前已有结果，加载之前的节点树
   const existingAnswer = currentAnswer.value
+
+  simStore.previewMode = false
+  simStore.paletteVisible = false
+  simStore.selectedNodeId = null
+
   if (existingAnswer?.value?.nodes) {
     simStore.nodeTree = JSON.parse(JSON.stringify(existingAnswer.value.nodes))
   } else if (defaultLayoutId) {
@@ -62,10 +82,16 @@ function handleInteractive() {
   } else {
     simStore.reset()
   }
+
   simStore.currentQuestionId = props.question.id
   appStore.simulatorVisible = true
 }
 
+/**
+ * Serializes and stores the current simulator result for the active question.
+ *
+ * @returns {void}
+ */
 function saveInteractiveResult() {
   const result = simStore.getResult()
   appStore.setAnswer(props.question.id, {
@@ -82,7 +108,6 @@ function saveInteractiveResult() {
     <td>{{ question.text }}</td>
     <td style="font-size: 13px; color: #606266;">{{ question.purpose }}</td>
     <td>
-      <!-- 文字输入 -->
       <template v-if="question.type === 'text'">
         <el-input
           v-model="textValue"
@@ -91,7 +116,6 @@ function saveInteractiveResult() {
         />
       </template>
 
-      <!-- 选项选择 -->
       <template v-else-if="question.type === 'option'">
         <el-checkbox-group v-model="selectedOptions" @change="handleOptionSelect">
           <el-checkbox
@@ -110,13 +134,16 @@ function saveInteractiveResult() {
         />
       </template>
 
-      <!-- 交互式收集 -->
       <template v-else-if="question.type === 'interactive'">
         <div style="display: flex; gap: 8px; align-items: center;">
           <el-button type="primary" size="small" @click="handleInteractive">
             打开模拟器设计
           </el-button>
-          <el-button size="small" @click="saveInteractiveResult" v-if="simStore.currentQuestionId === question.id">
+          <el-button
+            v-if="simStore.currentQuestionId === question.id"
+            size="small"
+            @click="saveInteractiveResult"
+          >
             保存设计结果
           </el-button>
           <span v-if="currentAnswer?.value" style="font-size: 12px; color: #67c23a;">

@@ -1,0 +1,33 @@
+@startuml 界面子系统_模块图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ComponentFontName SimHei
+skinparam TitleFontName SimHei
+skinparam ArrowColor #333333
+
+title 界面子系统 - 模块图（v0.2.0）
+
+package "界面子系统" as UI_SYS #F3E5F5 {
+  component [顶部工具栏模块] as MOD_HEADER
+  component [侧边栏模块] as MOD_SIDEBAR
+  component [内容展示区模块] as MOD_CONTENT
+  component [模拟器区域模块] as MOD_SIM_HOST
+}
+
+MOD_HEADER --> MOD_SIDEBAR : 控制侧栏显隐
+MOD_SIDEBAR --> MOD_CONTENT : 切换分类
+MOD_CONTENT --> MOD_SIM_HOST : 显示交互式问题
+
+note right of MOD_HEADER
+  负责全局按钮：
+  侧栏显隐、模拟器显隐、保存结果。
+end note
+
+note right of MOD_SIM_HOST
+  仅承载 PhoneFrame 宿主。
+  面板入口已迁移到模拟器内部状态栏。
+end note
+
+@enduml

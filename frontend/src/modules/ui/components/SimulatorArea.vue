@@ -1,7 +1,6 @@
 <script setup>
 import { useAppStore } from '../../../stores/app'
 import PhoneFrame from '../../interactive/components/PhoneFrame.vue'
-import ComponentPanel from '../../interactive/components/ComponentPanel.vue'
 
 const store = useAppStore()
 </script>
@@ -10,5 +9,4 @@ const store = useAppStore()
   <div class="simulator-area" :class="{ hidden: !store.simulatorVisible }">
     <PhoneFrame />
   </div>
-  <ComponentPanel />
 </template>

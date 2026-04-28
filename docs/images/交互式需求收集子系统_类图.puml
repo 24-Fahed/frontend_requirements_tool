@@ -1,0 +1,115 @@
+@startuml 交互式需求收集子系统_类图
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName SimHei
+skinparam PackageFontName SimHei
+skinparam ClassFontName SimHei
+skinparam TitleFontName SimHei
+skinparam ArrowColor #333333
+
+title 交互式需求收集子系统 - 类图（v0.2.0）
+
+package "宿主与文档应用" #FFE0B2 {
+  class PhoneFrame {
+    + initializeFrameDocument(targetDocument): void
+    + mountRuntimeApp(): void
+    + unmountRuntimeApp(): void
+  }
+
+  class SimulatorDocumentApp {
+    + runtimeContext: RuntimeContext
+    + allMetas: ComponentInfo[] {computed}
+    + metaMap: Map<string, ComponentInfo> {computed}
+    + selectNode(nodeId: string): void
+  }
+
+  class SimulatorTopBar {
+    + previewMode: boolean {computed}
+    + paletteVisible: boolean {computed}
+  }
+}
+
+package "编辑器组件" #FFE0B2 {
+  class ComponentPanel {
+    + activeTab: string
+    + metaToNode(meta: ComponentInfo): LayoutNode
+  }
+
+  class PanelPreview {
+    + previewProps: object {computed}
+    + loadPreviewComponent(): Promise<void>
+  }
+
+  class SimNode {
+    + meta: ComponentInfo {computed}
+    + isContainer: boolean {computed}
+    + isSelected: boolean {computed}
+    + normalizedProps: object {computed}
+    + loadRuntimeComponent(): Promise<void>
+  }
+}
+
+package "运行时服务" #FFE0B2 {
+  class ComponentLoader {
+    + createRuntimeContext(targetWindow, targetDocument, cacheKey): RuntimeContext
+    + preloadComponentLibraries(metas, runtimeContext): Promise<void>
+    + resolveRuntimeComponent(meta, runtimeContext): Promise<Component>
+  }
+
+  class RuntimeContext {
+    + window: Window
+    + document: Document
+    + cacheKey: string
+  }
+
+  class SimulatorDocumentStyles
+}
+
+package "状态模块" #FFE0B2 {
+  class SimulatorStore {
+    + nodeTree: LayoutNode[]
+    + currentQuestionId: string
+    + selectedNodeId: string
+    + previewMode: boolean
+    + paletteVisible: boolean
+    + togglePreview(): void
+    + togglePalette(): void
+    + loadDefault(layoutId: string): void
+    + getResult(): { nodes: LayoutNode[] }
+  }
+}
+
+class LayoutNode {
+  + id: string
+  + type: string
+  + props: object
+  + children?: LayoutNode[]
+}
+
+class ComponentInfo {
+  + name: string
+  + label: string
+  + category: string
+  + defaultProps: object
+  + sourceFile?: string
+  + componentTag?: string
+  + isContainer?: boolean
+}
+
+PhoneFrame --> SimulatorDocumentApp
+PhoneFrame --> SimulatorDocumentStyles
+SimulatorDocumentApp --> ComponentPanel
+SimulatorDocumentApp --> SimNode
+SimulatorDocumentApp --> ComponentLoader
+SimulatorDocumentApp --> SimulatorStore
+SimulatorTopBar --> SimulatorStore
+ComponentPanel --> PanelPreview
+ComponentPanel --> SimulatorStore
+ComponentPanel --> ComponentInfo
+SimNode --> LayoutNode
+SimNode --> ComponentLoader
+PanelPreview --> ComponentLoader
+ComponentLoader --> RuntimeContext
+SimulatorStore --> LayoutNode
+
+@enduml

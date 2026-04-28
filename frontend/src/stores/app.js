@@ -1,28 +1,27 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import api from '../api'
 
 export const useAppStore = defineStore('app', () => {
-  // 需求数据
   const requirementData = ref(null)
   const categories = computed(() => requirementData.value?.categories || [])
   const projectInfo = computed(() => requirementData.value?.project || {})
 
-  // 组件和布局注册表
   const componentList = ref([])
   const layoutList = ref([])
   const defaultLayouts = ref([])
 
-  // 界面状态
   const activeCategoryId = ref(null)
   const sidebarCollapsed = ref(false)
   const simulatorVisible = ref(true)
-  const panelOpen = ref(false)
 
-  // 回答数据
   const answers = ref({})
 
-  // 加载需求配置
+  /**
+   * Loads requirement categories and project information from the backend.
+   *
+   * @returns {Promise<void>}
+   */
   async function loadRequirements() {
     const data = await api.getRequirements()
     requirementData.value = data
@@ -31,36 +30,70 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  // 加载组件描述
+  /**
+   * Loads component and layout metadata used by the interactive simulator.
+   *
+   * @returns {Promise<void>}
+   */
   async function loadComponents() {
     const data = await api.getComponents()
     const allComponents = data.components || []
     componentList.value = allComponents.filter(item => !item.isContainer)
     layoutList.value = allComponents.filter(item => item.isContainer)
-    console.log('[DEBUG #21] loadComponents:', { total: allComponents.length, components: componentList.value.length, layouts: layoutList.value.length, sample: allComponents[0] })
+    console.log('[DEBUG #21] loadComponents:', {
+      total: allComponents.length,
+      components: componentList.value.length,
+      layouts: layoutList.value.length,
+      sample: allComponents[0],
+    })
   }
 
-  // 加载默认布局
+  /**
+   * Loads registered default layouts for interactive questions.
+   *
+   * @returns {Promise<void>}
+   */
   async function loadDefaultLayouts() {
     const data = await api.getDefaultLayout()
     defaultLayouts.value = data.layouts || []
   }
 
-  // 切换分类
+  /**
+   * Updates the currently active requirement category.
+   *
+   * @param {string} categoryId
+   * @returns {void}
+   */
   function setCategory(categoryId) {
     activeCategoryId.value = categoryId
   }
 
-  // 收集回答
+  /**
+   * Stores the answer payload for a question.
+   *
+   * @param {string} questionId
+   * @param {object} answer
+   * @returns {void}
+   */
   function setAnswer(questionId, answer) {
     answers.value[questionId] = answer
   }
 
+  /**
+   * Gets the stored answer payload for a question.
+   *
+   * @param {string} questionId
+   * @returns {object | null}
+   */
   function getAnswer(questionId) {
     return answers.value[questionId] || null
   }
 
-  // 提交结果
+  /**
+   * Serializes and submits all collected answers to the backend.
+   *
+   * @returns {Promise<any>}
+   */
   async function submitResults() {
     const answerList = Object.values(answers.value)
     const result = {
@@ -71,12 +104,16 @@ export const useAppStore = defineStore('app', () => {
     return await api.saveResults(result)
   }
 
-  // 加载已保存的结果
+  /**
+   * Loads previously saved answers and hydrates the local answer map.
+   *
+   * @returns {Promise<void>}
+   */
   async function loadResults() {
     const data = await api.getResults()
     if (data.answers?.length) {
-      for (const ans of data.answers) {
-        answers.value[ans.questionId] = ans
+      for (const answer of data.answers) {
+        answers.value[answer.questionId] = answer
       }
     }
   }
@@ -91,7 +128,6 @@ export const useAppStore = defineStore('app', () => {
     activeCategoryId,
     sidebarCollapsed,
     simulatorVisible,
-    panelOpen,
     answers,
     loadRequirements,
     loadComponents,
